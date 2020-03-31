@@ -3,15 +3,12 @@ import * as yaml from "node-yaml";
 
 // Generic
 import { MapGenerator } from "./Common/MapGenerator"
-import { MapFlattener } from "./Common/MapFlattener"
-import { MapFlattenerObsolete } from "./Common/MapFlattenerObsolete"
 import { ExampleProcessor } from "./Common/ExampleProcessor"; 
 import { Example } from "./Common/Example";
 
 // Generators
 import { GenerateIntegrationTest, GenerateDefaultTestScenario } from "./IntegrationTest/Generator";
 
-import { Adjustments } from "./Common/Adjustments"; 
 import { MapModuleGroup } from "./Common/ModuleMap";
 
 export type LogCallback = (message: string) => void;
@@ -85,17 +82,12 @@ extension.Add("test", async autoRestApi => {
         let packageName = await autoRestApi.GetValue("package-name") || namespace.replace(/\./g, '-');
         let cliName = await autoRestApi.GetValue("group-name") || await autoRestApi.GetValue("cli-name") || packageName.split('-').pop();
 
-        // this will be obsolete
-        let adjustments = await autoRestApi.GetValue("adjustments");
 
         let cliCommandOverrides = await autoRestApi.GetValue("cmd-override");
         let optionOverrides = await autoRestApi.GetValue("option-override");
 
         let testScenario: any[] = await autoRestApi.GetValue("test-setup") || await autoRestApi.GetValue("test-scenario");
 
-        /* THIS IS TO BE OBSOLETED ---------------------------*/
-        if (adjustments == null) adjustments = {};
-        let adjustmentsObject = new Adjustments(adjustments);
         /*----------------------------------------------------*/
         let flattenAll = await autoRestApi.GetValue("flatten-all");
         let tag = await autoRestApi.GetValue("tag");
@@ -151,7 +143,7 @@ extension.Add("test", async autoRestApi => {
             // GENERATE RAW MAP
             //
             //-------------------------------------------------------------------------------------------------------------------------
-            let mapGenerator = new MapGenerator(swagger, adjustmentsObject, cliName, examples, function(msg: string) {
+            let mapGenerator = new MapGenerator(swagger, {}, cliName, examples, function(msg: string) {
                 if (log == "map")
                 {
                     Info(msg);
@@ -178,17 +170,6 @@ extension.Add("test", async autoRestApi => {
             // MAP FLATTENING AND TRANSFORMATIONS
             //
             //-------------------------------------------------------------------------------------------------------------------------
-            let mapFlattener = flattenAll ? 
-                              new MapFlattener(map, optionOverrides, cliCommandOverrides, function(msg: string) {
-                                  if (log == "flattener")
-                                    Info(msg);
-                                }) :
-                                new MapFlattenerObsolete(map, adjustmentsObject, flattenAll, optionOverrides, cliCommandOverrides, function(msg: string) {
-                                  if (log == "flattener")
-                                    Info(msg);
-                                });
-
-            mapFlattener.Transform();
 
             //-------------------------------------------------------------------------------------------------------------------------
             //

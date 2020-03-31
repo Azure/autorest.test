@@ -7,13 +7,11 @@ import { MapModuleGroup, ModuleOption, ModuleMethod, Module, EnumValue, ModuleOp
 import { Example } from "../Common/Example";
 import { ToSnakeCase, ToCamelCase, NormalizeResourceId, Capitalize, PluralToSingular } from "../Common/Helpers";
 import { LogCallback } from "../index";
-import { Adjustments } from "./Adjustments";
-import { METHODS } from 'http';
 
 export class MapGenerator
 {
     public constructor (swagger: any,
-                        adjustments: Adjustments,
+                        adjustments: any,
                         cliName: string,
                         examples: Example[],
                         cb: LogCallback,
@@ -637,10 +635,10 @@ export class MapGenerator
 
                     this._log("MAP PROCESSING ATTR: " + pathSwagger + "/" + attr.name.raw)
         
-                    if (this._adjustments.IsPathIncludedInResponse(pathSwagger + "/" + attr.name.raw))
-                        this._log("INCLUDED IN RESPONSE");
-                    if (this._adjustments.IsPathExcludedFromResponse(pathSwagger + "/" + attr.name.raw))
-                        this._log("EXCLUDED FROM RESPONSE");
+                    //if (this._adjustments.IsPathIncludedInResponse(pathSwagger + "/" + attr.name.raw))
+                    //    this._log("INCLUDED IN RESPONSE");
+                    //if (this._adjustments.IsPathExcludedFromResponse(pathSwagger + "/" + attr.name.raw))
+                    //    this._log("EXCLUDED FROM RESPONSE");
             
                     let includeOverride: boolean = false;
                     let excludeOverride: boolean = false;
@@ -650,43 +648,43 @@ export class MapGenerator
                     {
                         if (isInfo)
                         {
-                            if (this._adjustments.IsPathExcludedFromInfoResponse(pathSwagger + "/" + attr.name.raw))
-                            {
-                                excludeOverride = true;
-                                this._log("INFO EXCLUDE OVERRIDE")
-                            }
-                            if (this._adjustments.IsPathIncludedInInfoResponse(pathSwagger + "/" + attr.name.raw))
-                            {
-                                includeOverride = true;
-                                this._log("INFO INCLUDE OVERRIDE")
-                            }
+                            //if (this._adjustments.IsPathExcludedFromInfoResponse(pathSwagger + "/" + attr.name.raw))
+                            //{
+                            //    excludeOverride = true;
+                            //    this._log("INFO EXCLUDE OVERRIDE")
+                            //}
+                            //if (this._adjustments.IsPathIncludedInInfoResponse(pathSwagger + "/" + attr.name.raw))
+                            //{
+                            //    includeOverride = true;
+                            //    this._log("INFO INCLUDE OVERRIDE")
+                            //}
                         }
                         else
                         {
-                            if (this._adjustments.IsPathExcludedFromResponse(pathSwagger + "/" + attr.name.raw))
-                            {
-                                excludeOverride = true;
-                                this._log("RESPONSE EXCLUDE OVERRIDE")
-                            }
-                            if (this._adjustments.IsPathIncludedInResponse(pathSwagger + "/" + attr.name.raw))
-                            {
-                                includeOverride = true;
-                                this._log("RESPONSE INCLUDE OVERRIDE")
-                            }
+                            //if (this._adjustments.IsPathExcludedFromResponse(pathSwagger + "/" + attr.name.raw))
+                            //{
+                            //    excludeOverride = true;
+                            //    this._log("RESPONSE EXCLUDE OVERRIDE")
+                            //}
+                            //if (this._adjustments.IsPathIncludedInResponse(pathSwagger + "/" + attr.name.raw))
+                            //{
+                            //    includeOverride = true;
+                            //    this._log("RESPONSE INCLUDE OVERRIDE")
+                            //}
                         }
                     }
                     else
                     {
-                        if (this._adjustments.IsPathExcludedFromRequest(pathSwagger + "/" + attr.name.raw))
-                        {
-                            excludeOverride = true;
-                            this._log("REQUEST EXCLUDE OVERRIDE")
-                        }
-                        if (this._adjustments.IsPathIncludedInRequest(pathSwagger + "/" + attr.name.raw))
-                        {
-                            includeOverride = true;
-                            this._log("REQUEST INCLUDE OVERRIDE")
-                        }
+                        //if (this._adjustments.IsPathExcludedFromRequest(pathSwagger + "/" + attr.name.raw))
+                        //{
+                        //    excludeOverride = true;
+                        //    this._log("REQUEST EXCLUDE OVERRIDE")
+                        //}
+                        //if (this._adjustments.IsPathIncludedInRequest(pathSwagger + "/" + attr.name.raw))
+                        //{
+                        //    includeOverride = true;
+                        //    this._log("REQUEST INCLUDE OVERRIDE")
+                        //}
                     }
 
                     if (excludeOverride)
@@ -1090,7 +1088,7 @@ export class MapGenerator
 
     private _map: MapModuleGroup = null;
     private _swagger: any = null;
-    private _adjustments: Adjustments;
+    private _adjustments: any;
     private _cliName: string = null;
     private _index: number;
     private _examples: Example[];
