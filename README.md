@@ -1,14 +1,44 @@
+See documentation [here](doc/00-overview.md)
 
-# Contributing
+``` yaml
+use-extension:
+  "@microsoft.azure/autorest.modeler": "2.3.45" # keep in sync with package.json's dev dependency in order to have meaningful tests
 
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
-Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+pipeline:
+    cli/imodeler1:
+        input: openapi-document/identity
+        output-artifact: code-model-v1
+        scope: cli
+    cli/commonmarker:
+        input: imodeler1
+        output-artifact: code-model-v1
+    cli/cm/transform:
+        input: commonmarker
+        output-artifact: code-model-v1
+    cli/cm/emitter:
+        input: transform
+        scope: scope-cm/emitter
+    cli/generate:
+        plugin: cli
+        input: cm/transform
+        output-artifact: source-file-cli
+    cli/transform:
+        input: generate
+        output-artifact: source-file-cli
+        scope: scope-transform-string
+    cli/emitter:
+        input: transform
+        scope: scope-cli/emitter
 
-When you submit a pull request, a CLA bot will automatically determine whether you need to provide
-a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
-provided by the bot. You will only need to do this once across all repos using our CLA.
+scope-cli/emitter:
+  input-artifact: source-file-cli
+  output-uri-expr: $key
 
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+output-artifact:
+- source-file-cli
+```
+
+#``` yaml 
+#use-extension:
+#  "cli": "$(this-folder)"
+#```
