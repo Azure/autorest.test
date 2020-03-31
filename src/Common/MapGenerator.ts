@@ -306,28 +306,6 @@ export class MapGenerator
         return this.Operations[this._index];
     }
 
-    public get ModuleCreateOrUpdateMethod(): any
-    {
-        return this.ModuleFindMethod("CreateOrUpdate");
-    }
-
-    public get ModuleCreateMethod(): any
-    {
-        let method: any = this.ModuleFindMethod("Create");
-
-        if (method == null)
-        {
-            method = this.ModuleFindMethod("CreateSubscriptionInEnrollmentAccount");
-        }
-
-        return method;
-    }
-
-    public get ModuleUpdateMethod(): any
-    {
-        return this.ModuleFindMethod("Update");
-    }
-
     private Type_EnumValues(type: any): EnumValue[]
     {
         type = this.Type_Get(type);
