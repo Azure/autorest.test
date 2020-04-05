@@ -133,22 +133,22 @@ extension.Add("test", async autoRestApi => {
             // GENERATE RAW MAP
             //
             //-------------------------------------------------------------------------------------------------------------------------
-            let mapGenerator = new MapGenerator(swagger, {}, cliName, examples, function(msg: string) {
-                if (log == "map")
-                {
-                    Info(msg);
-                }
-            }, Error);
+            //let mapGenerator = new MapGenerator(swagger, {}, cliName, examples, function(msg: string) {
+            //    if (log == "map")
+            //    {
+            //        Info(msg);
+            //    }
+            //}, Error);
           
-            let map: MapModuleGroup = null;
-            try
-            {
-                map = mapGenerator.CreateMap();
-            }
-            catch (e)
-            {
-                Error("ERROR " + e.stack);
-            }
+            //let map: MapModuleGroup = null;
+            //try
+            //{
+            //    map = mapGenerator.CreateMap();
+            //}
+            //catch (e)
+            //{
+            //    Error("ERROR " + e.stack);
+            //}
 
 
             //-------------------------------------------------------------------------------------------------------------------------
@@ -163,26 +163,26 @@ extension.Add("test", async autoRestApi => {
             //
             //-------------------------------------------------------------------------------------------------------------------------
 
-            if (testScenario)
-            {
-                testScenario.forEach(element => {
-                    if (element['title'] != undefined)
-                    {
-                        map.Modules.forEach(m => {
-                            m.Examples.forEach(e => {
-                                if (e.Id == element['name'])
-                                {
-                                    e.Title = element['title'];
-                                }
-                            })
-                        });
-                    }
-                });
-            }
+            //if (testScenario)
+            //{
+            //    testScenario.forEach(element => {
+            //        if (element['title'] != undefined)
+            //        {
+            //            map.Modules.forEach(m => {
+            //                m.Examples.forEach(e => {
+            //                    if (e.Id == element['name'])
+            //                    {
+            //                        e.Title = element['title'];
+            //                    }
+            //                })
+            //            });
+            //        }
+            //    });
+            //}
 
         
-            if (map != null)
-            {
+            //if (map != null)
+            //{
 
                 //-------------------------------------------------------------------------------------------------------------------------
                 //
@@ -194,10 +194,10 @@ extension.Add("test", async autoRestApi => {
                     GenerateIntegrationTest(artifactType,
                                             testScenario,
                                             examples,
-                                            map.Namespace,
+                                            "xxx.namespace.xx",
                                             cliName,
                                             packageName,
-                                            map.MgmtClientName,
+                                            "XxxMgmtClientName",
                                             exampleProcessor.MethodsTotal,
                                             exampleProcessor.MethodsCovered,
                                             exampleProcessor.ExamplesTotal,
@@ -205,7 +205,7 @@ extension.Add("test", async autoRestApi => {
                                             WriteFile,
                                             Info)
                 }
-            }
+            //}
         }
     }
     catch (e)
