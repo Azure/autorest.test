@@ -48,7 +48,7 @@ export class ExampleProcessor
                     var example = new Example(body,
                                               url,
                                               method['httpMethod'],
-                                              k,
+                                              "/" + operation['name']['raw'] + "/" + method['httpMethod'] + "/" + k,
                                               filename,
                                               vars,
                                               refs,

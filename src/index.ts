@@ -87,7 +87,6 @@ extension.Add("test", async autoRestApi => {
         let flattenAll = await autoRestApi.GetValue("flatten-all");
         let tag = await autoRestApi.GetValue("tag");
         Info(tag);
-        let generateReport = await autoRestApi.GetValue("report");
 
         if (await autoRestApi.GetValue("swagger-integration-test"))
         {
