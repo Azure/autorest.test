@@ -66,7 +66,6 @@ extension.Add("test", async autoRestApi => {
         const inputFiles: string[] = await Promise.all(inputFileUris.map(uri => autoRestApi.ReadFile(uri)));
 
         let artifactType: ArtifactType;
-        let writeIntermediate: boolean = false;
 
         // namespace is the only obligatory option
         // we will derive default "package-name" and "root-name" from it
@@ -101,10 +100,6 @@ extension.Add("test", async autoRestApi => {
             artifactType = ArtifactType.ArtifactTypePythonIntegrationTest;
         }
 
-        if (await autoRestApi.GetValue("intermediate"))
-        {
-            writeIntermediate = true;
-        }
 
         for (let iff of inputFiles)
         {
@@ -156,10 +151,6 @@ extension.Add("test", async autoRestApi => {
                 Error("ERROR " + e.stack);
             }
 
-            if (writeIntermediate)
-            {
-              autoRestApi.WriteFile("intermediate/" + cliName + "-map-unflattened.yml", yaml.dump(map));
-            }
 
             //-------------------------------------------------------------------------------------------------------------------------
             //
@@ -190,22 +181,9 @@ extension.Add("test", async autoRestApi => {
                 });
             }
 
-            //-------------------------------------------------------------------------------------------------------------------------
-            //
-            // WRITE INTERMEDIATE FILE IF --intermediate OPTION WAS SPECIFIED
-            //
-            //-------------------------------------------------------------------------------------------------------------------------
-            if (writeIntermediate)
-            {
-                autoRestApi.WriteFile("intermediate/" + cliName + "-input.yml", yaml.dump(swagger));
-            }
         
             if (map != null)
             {
-                if (writeIntermediate)
-                {
-                    autoRestApi.WriteFile("intermediate/" + cliName + "-map-pre.yml", yaml.dump(map));
-                }
 
                 //-------------------------------------------------------------------------------------------------------------------------
                 //
