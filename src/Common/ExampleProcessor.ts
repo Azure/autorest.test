@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { MapModuleGroup, ModuleOption, ModuleMethod, Module, EnumValue } from "./ModuleMap"
 import { Example, ExampleVariable } from "./Example"
 import { ToSnakeCase, ToCamelCase, NormalizeResourceId } from "../Common/Helpers"
 
@@ -66,12 +65,10 @@ export class ExampleProcessor
     }
 
     private _examples: Example[] = null;
-    private _map: MapModuleGroup = null;
 
     private _swagger: any = null;
     private _testScenario: any = null;
 
-    private _currentOperation: number;
     private _filenames = {};
 
     public GetExamples(): Example[]

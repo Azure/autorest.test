@@ -2,14 +2,11 @@ import { AutoRestExtension, Channel } from '@azure-tools/autorest-extension-base
 import * as yaml from "node-yaml";
 
 // Generic
-import { MapGenerator } from "./Common/MapGenerator"
 import { ExampleProcessor } from "./Common/ExampleProcessor"; 
 import { Example } from "./Common/Example";
 
 // Generators
 import { GenerateIntegrationTest, GenerateDefaultTestScenario } from "./IntegrationTest/Generator";
-
-import { MapModuleGroup } from "./Common/ModuleMap";
 
 export type LogCallback = (message: string) => void;
 export type FileCallback = (path: string, rows: string[]) => void;
@@ -128,84 +125,28 @@ extension.Add("test", async autoRestApi => {
                 exampleProcessor = new ExampleProcessor(swagger, testScenario);
             }
 
-            //-------------------------------------------------------------------------------------------------------------------------
-            //
-            // GENERATE RAW MAP
-            //
-            //-------------------------------------------------------------------------------------------------------------------------
-            //let mapGenerator = new MapGenerator(swagger, {}, cliName, examples, function(msg: string) {
-            //    if (log == "map")
-            //    {
-            //        Info(msg);
-            //    }
-            //}, Error);
-          
-            //let map: MapModuleGroup = null;
-            //try
-            //{
-            //    map = mapGenerator.CreateMap();
-            //}
-            //catch (e)
-            //{
-            //    Error("ERROR " + e.stack);
-            //}
-
 
             //-------------------------------------------------------------------------------------------------------------------------
             //
-            // MAP FLATTENING AND TRANSFORMATIONS
+            // INTEGRATION TESTS
             //
             //-------------------------------------------------------------------------------------------------------------------------
-
-            //-------------------------------------------------------------------------------------------------------------------------
-            //
-            // UPDATE TEST DESCRIPTIONS USING TEST SETUP
-            //
-            //-------------------------------------------------------------------------------------------------------------------------
-
-            //if (testScenario)
-            //{
-            //    testScenario.forEach(element => {
-            //        if (element['title'] != undefined)
-            //        {
-            //            map.Modules.forEach(m => {
-            //                m.Examples.forEach(e => {
-            //                    if (e.Id == element['name'])
-            //                    {
-            //                        e.Title = element['title'];
-            //                    }
-            //                })
-            //            });
-            //        }
-            //    });
-            //}
-
-        
-            //if (map != null)
-            //{
-
-                //-------------------------------------------------------------------------------------------------------------------------
-                //
-                // INTEGRATION TESTS
-                //
-                //-------------------------------------------------------------------------------------------------------------------------
-                if (artifactType == ArtifactType.ArtifactTypeSwaggerIntegrationTest || artifactType == ArtifactType.ArtifactTypePythonIntegrationTest)
-                {
-                    GenerateIntegrationTest(artifactType,
-                                            testScenario,
-                                            examples,
-                                            "xxx.namespace.xx",
-                                            cliName,
-                                            packageName,
-                                            "XxxMgmtClientName",
-                                            exampleProcessor.MethodsTotal,
-                                            exampleProcessor.MethodsCovered,
-                                            exampleProcessor.ExamplesTotal,
-                                            exampleProcessor.ExamplesTested,
-                                            WriteFile,
-                                            Info)
-                }
-            //}
+            if (artifactType == ArtifactType.ArtifactTypeSwaggerIntegrationTest || artifactType == ArtifactType.ArtifactTypePythonIntegrationTest)
+            {
+                GenerateIntegrationTest(artifactType,
+                                        testScenario,
+                                        examples,
+                                        "xxx.namespace.xx",
+                                        cliName,
+                                        packageName,
+                                        "XxxMgmtClientName",
+                                        exampleProcessor.MethodsTotal,
+                                        exampleProcessor.MethodsCovered,
+                                        exampleProcessor.ExamplesTotal,
+                                        exampleProcessor.ExamplesTested,
+                                        WriteFile,
+                                        Info)
+            }
         }
     }
     catch (e)
