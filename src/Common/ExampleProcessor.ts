@@ -30,7 +30,7 @@ export class ExampleProcessor
                 var examplesDictionary = method['extensions']['x-ms-examples'];
                 for (var k in examplesDictionary)
                 {
-                    var body = examplesDictionary[k];
+                    var exampleId: string = "/" + operation['name']['raw'] + "/" + method['httpMethod'] + "/" + k;                    var body = examplesDictionary[k];
                     var url = NormalizeResourceId(method['url']);
                     var refs: string[] = [];
                     var vars: ExampleVariable[] = [];
@@ -48,7 +48,7 @@ export class ExampleProcessor
                     var example = new Example(body,
                                               url,
                                               method['httpMethod'],
-                                              "/" + operation['name']['raw'] + "/" + method['httpMethod'] + "/" + k,
+                                              exampleId,
                                               filename,
                                               vars,
                                               refs,
@@ -96,8 +96,9 @@ export class ExampleProcessor
                 {
                     this.MethodsCovered++;
 
-                    for (let example in method['extensions']['x-ms-examples'])
+                    for (let k in method['extensions']['x-ms-examples'])
                     {
+                        let exampleId: string = "/" + this._swagger.operations[idx]['name']['raw'] + "/" + method['httpMethod'] + "/" + k
                         this.ExamplesTotal++;
 
                         // check if example is in test scenario
@@ -105,7 +106,7 @@ export class ExampleProcessor
                         {
                             for (let item of this._testScenario)
                             {
-                                if (item['name'] == example)
+                                if (item['name'] == exampleId)
                                 {
                                     this.ExamplesTested++;
                                     break;
