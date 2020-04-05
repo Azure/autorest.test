@@ -70,7 +70,9 @@ extension.Add("test", async autoRestApi => {
 
         // namespace is the only obligatory option
         // we will derive default "package-name" and "root-name" from it
-        const namespace = await autoRestApi.GetValue("namespace");
+        const cli = await autoRestApi.GetValue("cli");
+        const namespace = cli['namespace'];
+        let testScenario = cli["test-setup"] || cli["test-scenario"];
 
         if (!namespace)
         {
@@ -81,12 +83,6 @@ extension.Add("test", async autoRestApi => {
         // package name and group name can be guessed from namespace
         let packageName = await autoRestApi.GetValue("package-name") || namespace.replace(/\./g, '-');
         let cliName = await autoRestApi.GetValue("group-name") || await autoRestApi.GetValue("cli-name") || packageName.split('-').pop();
-
-
-        let cliCommandOverrides = await autoRestApi.GetValue("cmd-override");
-        let optionOverrides = await autoRestApi.GetValue("option-override");
-
-        let testScenario: any[] = await autoRestApi.GetValue("test-setup") || await autoRestApi.GetValue("test-scenario");
 
         /*----------------------------------------------------*/
         let flattenAll = await autoRestApi.GetValue("flatten-all");
