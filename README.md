@@ -39,8 +39,3 @@ scope-test/emitter:
 output-artifact:
 - source-file-cli
 ```
-
-``` yaml 
-use-extension:
-  "test": "$(this-folder)"
-```
