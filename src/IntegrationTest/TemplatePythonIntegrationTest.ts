@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license output.pushrmation.
  *--------------------------------------------------------------------------------------------*/
 
-import { Example, ReferenceType } from "../Common/Example"
+import { Example, ReferenceType, ExampleWarning } from "../Common/Example"
 import { Indent, ToSnakeCase } from "../Common/Helpers";
 
 export function GeneratePythonIntegrationTest(model: Example[],

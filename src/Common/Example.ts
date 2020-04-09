@@ -3,11 +3,39 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { timingSafeEqual } from "crypto";
+
 export enum ReferenceType
 {
     STORAGE,
     VIRTUAL_NETWORK,
     SUBNET
+}
+
+export class ExampleWarning
+{
+    public constructor(exampleName: string,
+                       description: string)
+    {
+        this.ExampleName = exampleName;
+        this.Description = description;
+    }
+
+    public ExampleName: string;
+    public Description: string;
+}
+
+export class ExampleVariable
+{
+    public constructor(name: string, value: string, swaggerName: string)
+    {
+        this.name = name;
+        this.value = value;
+        this.swaggerName = swaggerName;
+    }
+    public name: string;
+    public value: string;
+    public swaggerName: string;
 }
 
 export class Example
@@ -24,7 +52,8 @@ export class Example
                         methodId: string,
                         operationName: string,
                         methodName: string,
-                        longRunning: boolean)
+                        longRunning: boolean,
+                        warnings: ExampleWarning[])
     {
         this.Example = example;
         this.Url = url;
@@ -40,6 +69,7 @@ export class Example
         this.OperationName = operationName;
         this.MethodName = methodName;
         this.LongRunning = longRunning;
+        this.Warnings = warnings;
     }
 
     public Method: string;
@@ -56,6 +86,7 @@ export class Example
     public References: string[];
     public ReferenceTypes: ReferenceType[];
     public LongRunning: boolean = false;
+    public Warnings: ExampleWarning[] = [];
 
     public GetExampleApiVersion(): string
     {
@@ -107,17 +138,4 @@ export class Example
 
         return body;
     }
-}
-
-export class ExampleVariable
-{
-    public constructor(name: string, value: string, swaggerName: string)
-    {
-        this.name = name;
-        this.value = value;
-        this.swaggerName = swaggerName;
-    }
-    public name: string;
-    public value: string;
-    public swaggerName: string;
 }

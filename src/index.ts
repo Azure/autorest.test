@@ -3,7 +3,7 @@ import * as yaml from "node-yaml";
 
 // Generic
 import { ExampleProcessor } from "./Common/ExampleProcessor"; 
-import { Example } from "./Common/Example";
+import { Example, ExampleWarning } from "./Common/Example";
 
 // Generators
 import { GenerateIntegrationTest, GenerateDefaultTestScenario } from "./IntegrationTest/Generator";
@@ -147,6 +147,12 @@ extension.Add("test", async autoRestApi => {
                                         WriteFile,
                                         Info)
             }
+
+            let warnings: ExampleWarning[] = exampleProcessor.GetWarnings();
+
+            warnings.forEach(warning => {
+                Warning(warning.ExampleName + ": " + warning.Description);
+            });
         }
     }
     catch (e)

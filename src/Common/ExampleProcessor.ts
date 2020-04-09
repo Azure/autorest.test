@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Example, ExampleVariable, ReferenceType } from "./Example"
+import { Example, ExampleVariable, ReferenceType, ExampleWarning } from "./Example"
 import { ToSnakeCase, ToCamelCase, NormalizeResourceId } from "../Common/Helpers"
 
 export class ExampleProcessor
@@ -28,7 +28,8 @@ export class ExampleProcessor
                 var examplesDictionary = method['extensions']['x-ms-examples'];
                 for (var k in examplesDictionary)
                 {
-                    var exampleId: string = "/" + operation['name']['raw'] + "/" + method['httpMethod'] + "/" + k;                    var body = examplesDictionary[k];
+                    this._exampleId = "/" + operation['name']['raw'] + "/" + method['httpMethod'] + "/" + k;
+                    var body = examplesDictionary[k];
                     var url = NormalizeResourceId(method['url']);
                     var refs: string[] = [];
                     var vars: ExampleVariable[] = [];
@@ -46,7 +47,7 @@ export class ExampleProcessor
                     var example = new Example(body,
                                               url,
                                               method['httpMethod'],
-                                              exampleId,
+                                              this._exampleId,
                                               filename,
                                               vars,
                                               refs,
@@ -55,7 +56,8 @@ export class ExampleProcessor
                                               method['$id'],
                                               operation['name']['raw'],
                                               method['name']['raw'],
-                                              longRunning);
+                                              longRunning,
+                                              this._warnings);
                     this._examples.push(example);
                 }
             }
@@ -71,10 +73,11 @@ export class ExampleProcessor
 
     private _filenames = {};
 
-    private _warnings: string[] = []
+    private _warnings: ExampleWarning[] = []
     private _references: ReferenceType[] = [];
+    private _exampleId: string = null;
 
-    public GetWarnings(): string[]
+    public GetWarnings(): ExampleWarning[]
     {
         return this._warnings;
     }
@@ -311,6 +314,11 @@ export class ExampleProcessor
                                 if (subv.indexOf("/storageAccounts/") >=0)
                                 {
                                     this._references.push(ReferenceType.STORAGE);
+                                }
+
+                                if (!subv.startsWith("/subscription/mooo/"))
+                                {
+                                    this._warnings.push(new ExampleWarning(this._exampleId, "non-standard subscription id format '" + subv.split('/')[2] + "'"));
                                 }
                             }
                             else

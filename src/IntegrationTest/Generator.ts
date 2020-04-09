@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ArtifactType, FileCallback, LogCallback } from "../index"
-import { Example } from "../Common/Example";
+import { Example, ExampleWarning } from "../Common/Example";
 import { GeneratePythonIntegrationTest } from "./TemplatePythonIntegrationTest"
 import { GenerateSwaggerIntegrationTest } from "./TemplateSwaggerIntegrationTest"
 
