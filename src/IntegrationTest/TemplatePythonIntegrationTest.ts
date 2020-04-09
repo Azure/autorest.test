@@ -57,10 +57,12 @@ export function GeneratePythonIntegrationTest(model: Example[],
     output.push("import " + namespace);
 
     let hasStorageAccountPreparer: boolean = (refs.indexOf(ReferenceType.STORAGE) >= 0);
+    let needSubscriptionId: boolean = false;
     let preparers = ", ResourceGroupPreparer";
     if (hasStorageAccountPreparer)
     {
         preparers += ", StorageAccountPreparer";
+        needSubscriptionId = true;
     }
 
     output.push("from devtools_testutils import AzureMgmtTestCase" + preparers);
@@ -91,6 +93,16 @@ export function GeneratePythonIntegrationTest(model: Example[],
     // XXX - this is service specific and should be fixed
     output.push("        SERVICE_NAME = \"myapimrndxyz\"");
 
+    if (needSubscriptionId)
+    {
+        output.push("        SUBSCRIPTION_ID = self.settings.SUBSCRIPTION_ID");
+    }
+    output.push("        RESOURCE_GROUP_NAME = resource_group.name");
+
+    if (hasStorageAccountPreparer)
+    {
+        output.push("        STORAGE_ACCOUNT_NAME = storage_account.name");
+    }
     
     for (var ci = 0; ci < config.length; ci++)
     {
@@ -131,11 +143,11 @@ export function GeneratePythonIntegrationTest(model: Example[],
         let clientParams = _UrlToParameters(example.Url);
         if (clientParams && hasBody)
         {
-            clientParams += ', BODY';
+            clientParams += ', body=BODY';
         }
         else if (hasBody)
         {
-            clientParams = 'BODY';
+            clientParams = 'body=BODY';
         }
 
         output.push("        result = self.mgmt_client." + ToSnakeCase(example.OperationName) + "." + ToSnakeCase(example.MethodName) +
@@ -235,11 +247,11 @@ function _UrlToParameters(sourceUrl: string): string
 
             if (varName == "RESOURCE_GROUP")
             {
-                params.push('resource_group.name');
+                params.push('resource_group_name=RESOURCE_GROUP');
             }
             else
             {
-                params.push(varName);
+                params.push(varName.toLowerCase() + "=" + varName);
             }
         }
     }
