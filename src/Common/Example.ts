@@ -3,6 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+export enum ReferenceType
+{
+    STORAGE,
+    VIRTUAL_NETWORK,
+    SUBNET
+}
+
 export class Example
 {
     public constructor (example: any,
@@ -12,6 +19,7 @@ export class Example
                         filename: string,
                         variables: ExampleVariable[],
                         references: string[],
+                        referenceTypes: ReferenceType[],
                         operationId: string,
                         methodId: string,
                         operationName: string,
@@ -26,6 +34,7 @@ export class Example
         this.Filename = filename;
         this.Variables = variables;
         this.References = references;
+        this.ReferenceTypes = referenceTypes;
         this.OperationId = operationId;
         this.MethodId = methodId;
         this.OperationName = operationName;
@@ -45,6 +54,7 @@ export class Example
     public Variables: ExampleVariable[]; 
     public Example: any;
     public References: string[];
+    public ReferenceTypes: ReferenceType[];
     public LongRunning: boolean = false;
 
     public GetExampleApiVersion(): string

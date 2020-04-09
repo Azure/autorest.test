@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license output.pushrmation.
  *--------------------------------------------------------------------------------------------*/
 
-import { Example } from "../Common/Example"
+import { Example, ReferenceType } from "../Common/Example"
 import { Indent, ToSnakeCase } from "../Common/Helpers";
 
 export function GeneratePythonIntegrationTest(model: Example[],
@@ -15,6 +15,17 @@ export function GeneratePythonIntegrationTest(model: Example[],
                                               methodsCovered: number,
                                               examplesTotal: number,
                                               examplesTested: number) : string[] {
+
+    // get references from all examples
+    let refs: ReferenceType[] = [];
+    model.forEach(e => {
+        e.ReferenceTypes.forEach(r => {
+            if (refs.indexOf(r) < 0) {
+                refs.push(r);
+            }
+        });
+    });
+
     var output: string[] = [];
 
     let className: string = "Mgmt" + mgmtClientName.split("ManagementClient")[0] + "Test";
@@ -44,7 +55,16 @@ export function GeneratePythonIntegrationTest(model: Example[],
     output.push("");
     // XXX - proper namespace
     output.push("import " + namespace);
-    output.push("from devtools_testutils import AzureMgmtTestCase, ResourceGroupPreparer");
+
+    let hasStorageAccountPreparer: boolean = (refs.indexOf(ReferenceType.STORAGE) >= 0);
+    let preparers = ", ResourceGroupPreparer";
+    if (hasStorageAccountPreparer)
+    {
+        preparers += ", StorageAccountPreparer";
+    }
+
+    output.push("from devtools_testutils import AzureMgmtTestCase" + preparers);
+
     output.push("");
     output.push("AZURE_LOCATION = 'eastus'");
     output.push("");
@@ -57,7 +77,15 @@ export function GeneratePythonIntegrationTest(model: Example[],
     output.push("        )");
     output.push("    ");
     output.push("    @ResourceGroupPreparer(location=AZURE_LOCATION)");
-    output.push("    def " + testName + "(self, resource_group):");
+
+    let preparersParamList: string = ", resource_group";
+    if (hasStorageAccountPreparer)
+    {
+        output.push("    @StorageAccountPreparer(location=AZURE_LOCATION, name_prefix='gentest')");
+        preparersParamList += ", storage_account";
+    }
+
+    output.push("    def " + testName + "(self" + preparersParamList + "):");
     //output.push("        account_name = self.get_resource_name('pyarmcdn')");
     output.push("");
     // XXX - this is service specific and should be fixed

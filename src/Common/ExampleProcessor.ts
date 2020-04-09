@@ -3,9 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Example, ExampleVariable } from "./Example"
+import { Example, ExampleVariable, ReferenceType } from "./Example"
 import { ToSnakeCase, ToCamelCase, NormalizeResourceId } from "../Common/Helpers"
-
 
 export class ExampleProcessor
 {
@@ -51,6 +50,7 @@ export class ExampleProcessor
                                               filename,
                                               vars,
                                               refs,
+                                              this._references,
                                               operation['$id'],
                                               method['$id'],
                                               operation['name']['raw'],
@@ -70,6 +70,19 @@ export class ExampleProcessor
     private _testScenario: any = null;
 
     private _filenames = {};
+
+    private _warnings: string[] = []
+    private _references: ReferenceType[] = [];
+
+    public GetWarnings(): string[]
+    {
+        return this._warnings;
+    }
+
+    public GetReferences(): ReferenceType[]
+    {
+        return this._references;
+    }
 
     public GetExamples(): Example[]
     {
@@ -293,6 +306,12 @@ export class ExampleProcessor
                                 refs.push(this.GetFilenameFromUrl(subv, "put", false));
                                 
                                 this.ExtractVarsFromUrl(subv, null, vars);
+
+                                // [ZIM] this is initial, very simple reference implementation
+                                if (subv.indexOf("/storageAccounts/") >=0)
+                                {
+                                    this._references.push(ReferenceType.STORAGE);
+                                }
                             }
                             else
                             {
