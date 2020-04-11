@@ -6,7 +6,7 @@ See documentation [here](GUIDE.md)
 
 cli: {}
 python: {}
-require:
+try-require:
   - ./readme.python.md
   - ./readme.cli.md
 
