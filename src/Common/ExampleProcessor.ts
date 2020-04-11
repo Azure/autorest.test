@@ -444,7 +444,7 @@ export class ExampleProcessor
                         let defaultName: string = "my" + this.PluralToSingular(splitted[idx - 1].charAt(0).toUpperCase() + splitted[idx - 1].slice(1));
                         if (verify && (splitted[idx] != defaultName))
                         {
-                            this._warnings.push(new ExampleWarning(this._exampleId, "non-standard resource group name '" + splitted[idx] + "', should be '" + defaultName + "'"));
+                            this._warnings.push(new ExampleWarning(this._exampleId, "non-standard resource name '" + splitted[idx] + "', should be '" + defaultName + "'"));
                         }
 
                     newId += "/{{ " + this.PluralToSingular(ToSnakeCase(splitted[idx - 1])) + "_name }}";

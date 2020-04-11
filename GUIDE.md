@@ -32,7 +32,23 @@ This will allow any necessary adjustments to the test flow.
 
 In addition to test scenario information, there may be warnings related to examples available in swagger, for example:
 
-    TBD
+    WARNING: /Jobs/get/List jobs in a subscription: non-standard resource group name 'testrg', should be 'myResourceGroup'
+    WARNING: /Jobs/get/List jobs in a subscription: non-standard resource name 'xtprodtestarmos2', should be 'myStorageAccount'
+    WARNING: /Jobs/get/List jobs in a subscription: non-standard resource group name 'testrg', should be 'myResourceGroup'
+    WARNING: /Jobs/get/List jobs in a subscription: non-standard resource name 'test-bn1-import-cpu100-01', should be 'myJob'
+    WARNING: /Jobs/get/List jobs in a subscription: non-standard resource name 'xtprodtestarmos2', should be 'myStorageAccount'
+    WARNING: /Jobs/get/List jobs in a subscription: non-standard resource group name 'testrg', should be 'myResourceGroup'
+    WARNING: /Jobs/get/List jobs in a subscription: non-standard resource name 'test-bn1-import-cpu100-02', should be 'myJob'
+    WARNING: /Jobs/get/List jobs in a resource group: non-standard resource name 'xtprodtestwu', should be 'myStorageAccount'
+    WARNING: /Jobs/get/List jobs in a resource group: non-standard resource name 'test-by1-ssd-2', should be 'myJob'
+    WARNING: /Jobs/get/Get job: non-standard resource name 'test', should be 'myStorageAccount'
+    WARNING: /Jobs/get/Get job: non-standard resource name 'test', should be 'myJob'
+    WARNING: /Jobs/patch/Update job: non-standard resource name 'test', should be 'myStorageAccount'
+    WARNING: /Jobs/put/Create job: non-standard resource name 'test', should be 'myStorageAccount'
+    WARNING: /Jobs/put/Create job: non-standard resource name 'test', should be 'myStorageAccount'
+    WARNING: /Jobs/put/Create job: non-standard resource name 'test', should be 'myStorageAccount'
+    WARNING: /Jobs/delete/Delete job: non-standard resource name 'test', should be 'myStorageAccount'
+    WARNING: /Jobs/delete/Delete job: non-standard resource name 'test', should be 'myJob'
 
 Last piece of information printed out is test coverage information (this information is also included in test file itself):
 
