@@ -126,6 +126,13 @@ extension.Add("test", async autoRestApi => {
                 exampleProcessor = new ExampleProcessor(swagger, testScenario);
             }
 
+            //-------------------------------------------------------------------------------------------------------------------------
+            //
+            // GET ADDITIONAL INFORMATION FROM SWAGGER
+            //
+            //-------------------------------------------------------------------------------------------------------------------------
+            let mgmtClientName = swagger['name'];
+            // XXX - consider other options here
 
             //-------------------------------------------------------------------------------------------------------------------------
             //
@@ -140,7 +147,7 @@ extension.Add("test", async autoRestApi => {
                                         namespace,
                                         cliName,
                                         packageName,
-                                        "XxxMgmtClientName",
+                                        mgmtClientName,
                                         exampleProcessor.MethodsTotal,
                                         exampleProcessor.MethodsCovered,
                                         exampleProcessor.ExamplesTotal,
