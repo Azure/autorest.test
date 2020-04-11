@@ -67,8 +67,9 @@ extension.Add("test", async autoRestApi => {
         // namespace is the only obligatory option
         // we will derive default "package-name" and "root-name" from it
         const cli = await autoRestApi.GetValue("cli");
-        const namespace = cli['namespace'];
-        let testScenario = cli["test-setup"] || cli["test-scenario"];
+        const python = await autoRestApi.GetValue("python");
+        const namespace = python['namespace'];
+        let testScenario = cli["test-setup"] || cli["test-scenario"] || cli["test"];
 
         if (!namespace)
         {
@@ -77,8 +78,8 @@ extension.Add("test", async autoRestApi => {
         }
 
         // package name and group name can be guessed from namespace
-        let packageName = await autoRestApi.GetValue("package-name") || namespace.replace(/\./g, '-');
-        let cliName = await autoRestApi.GetValue("group-name") || await autoRestApi.GetValue("cli-name") || packageName.split('-').pop();
+        let packageName = namespace.replace(/\./g, '-');
+        let cliName = packageName.split('-').pop();
 
         /*----------------------------------------------------*/
         let flattenAll = await autoRestApi.GetValue("flatten-all");
@@ -136,7 +137,7 @@ extension.Add("test", async autoRestApi => {
                 GenerateIntegrationTest(artifactType,
                                         testScenario,
                                         examples,
-                                        "xxx.namespace.xx",
+                                        namespace,
                                         cliName,
                                         packageName,
                                         "XxxMgmtClientName",

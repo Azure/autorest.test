@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Example, ExampleVariable, ReferenceType, ExampleWarning } from "./Example"
-import { ToSnakeCase, ToCamelCase, NormalizeResourceId } from "../Common/Helpers"
+import { ToSnakeCase, ToCamelCase } from "../Common/Helpers"
 
 export class ExampleProcessor
 {
@@ -30,10 +30,10 @@ export class ExampleProcessor
                 {
                     this._exampleId = "/" + operation['name']['raw'] + "/" + method['httpMethod'] + "/" + k;
                     var body = examplesDictionary[k];
-                    var url = NormalizeResourceId(method['url']);
+                    var url = this.NormalizeResourceId(method['url']);
                     var refs: string[] = [];
                     var vars: ExampleVariable[] = [];
-                    var filename: string = this.GetExampleFilename(NormalizeResourceId(method['url']), method['httpMethod']);
+                    var filename: string = this.GetExampleFilename(this.NormalizeResourceId(method['url']), method['httpMethod']);
                     var longRunning: boolean = false;
 
                     if (method['extensions']['x-ms-long-running-operation'])
@@ -154,7 +154,7 @@ export class ExampleProcessor
                 {
                     if (subv.startsWith("/subscription"))
                     {
-                        body[pp] = NormalizeResourceId(subv);
+                        body[pp] = this.NormalizeResourceId(subv, true);
                     }
                 }
                 else
@@ -315,11 +315,6 @@ export class ExampleProcessor
                                 {
                                     this._references.push(ReferenceType.STORAGE);
                                 }
-
-                                if (!subv.startsWith("/subscription/mooo/"))
-                                {
-                                    this._warnings.push(new ExampleWarning(this._exampleId, "non-standard subscription id format '" + subv.split('/')[2] + "'"));
-                                }
                             }
                             else
                             {
@@ -371,6 +366,130 @@ export class ExampleProcessor
         }
     }
 
+    private NormalizeResourceId(oldId: string, verify: boolean = false): string
+    {
+        var newId: string = "";
+        var splitted: string[] = oldId.split("/");
+        var idx: number = 0;
+    
+        while (idx < splitted.length)
+        {
+            if (splitted[idx] == "")
+            {
+                //newId += "/";
+                idx++;
+            }
+            else if (idx == 1 && splitted[idx] == "{scope}" && splitted.length > 2 && splitted[idx + 1] == "providers")
+            {
+                newId += "{scope}";
+                idx += 1;
+            }
+            else if (splitted[idx] == "subscriptions")
+            {
+                if (verify)
+                {
+                    if (splitted[idx + 1] != "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
+                    {
+                        this._warnings.push(new ExampleWarning(this._exampleId, "non-standard subscription id format '" + splitted[idx + 1] + "', should be 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"));
+                    }
+                }
+
+                newId += "subscriptions/{{ subscription_id }}";
+                idx += 2;
+            }
+            else if (splitted[idx].toLowerCase() == "resourcegroups")
+            {
+                newId += "resourceGroups";
+                idx++;
+                
+                if (idx < splitted.length)
+                {
+                    if (verify && (splitted[idx] != "myResourceGroup"))
+                    {
+                        this._warnings.push(new ExampleWarning(this._exampleId, "non-standard resource group name '" + splitted[idx] + "', should be 'myResourceGroup'"));
+                    }
+
+                    newId += "/{{ resource_group }}";
+                    idx++;
+                }
+            }
+            else if (splitted[idx].toLowerCase() == "providers")
+            {
+                newId += "providers";
+                idx++;
+    
+                if (idx < splitted.length)
+                {
+                    // Microsoft.XXX
+                    newId += "/" + splitted[idx++];
+                }
+            }
+            else
+            {
+                // subresource_type
+                newId += splitted[idx++];
+    
+                if (idx < splitted.length)
+                {
+                    let type = splitted[idx - 1];
+    
+                    // XXX - handle exception like this for now
+                    if (type == "portalsettings")
+                    {
+                        // Next part should not be changed
+                        newId += "/" + splitted[idx++];
+                    }
+                    else
+                    {
+                        let defaultName: string = "my" + this.PluralToSingular(splitted[idx - 1].charAt(0).toUpperCase() + splitted[idx - 1].slice(1));
+                        if (verify && (splitted[idx] != defaultName))
+                        {
+                            this._warnings.push(new ExampleWarning(this._exampleId, "non-standard resource group name '" + splitted[idx] + "', should be '" + defaultName + "'"));
+                        }
+
+                    newId += "/{{ " + this.PluralToSingular(ToSnakeCase(splitted[idx - 1])) + "_name }}";
+                        idx++;
+                    }
+                }
+            }
+    
+            if (idx < splitted.length) newId += "/";
+        }
+    
+        return newId;
+    }
+
+    private PluralToSingular(name: string): string
+    {
+        // let's try to be smart here, as all operation names are plural so let's try to make it singular
+        if (name.endsWith("series"))
+        {
+            return name;
+        }
+        if (name.endsWith("ies"))
+        {
+            name = name.substring(0, name.length - 3) + "y";
+        }
+        else if (name.endsWith("sses") || name.endsWith("uses"))
+        {
+            name = name.substring(0, name.length - 2);                
+        }
+        else if (name.toLowerCase() == "apis")
+        {
+            name = name.substring(0, name.length - 1);
+        }
+        else if (name.toLowerCase().endsWith("xes"))
+        {
+            name = name.substring(0, name.length - 2);
+        }
+        else if (name.endsWith('s') && !name.endsWith("us") && !name.endsWith("ss") && !name.endsWith("is"))
+        {
+            name = name.substring(0, name.length - 1);
+        }
+    
+        return name;
+    }
+    
     public MethodsTotal: number;
     public MethodsCovered: number;
     public ExamplesTotal: number;

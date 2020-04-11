@@ -1,8 +1,15 @@
 # Autorest Test
 
-See documentation [here](doc/00-overview.md)
+See documentation [here](GUIDE.md)
 
 ``` yaml
+
+cli: {}
+python: {}
+require:
+  - ./readme.python.md
+  - ./readme.cli.md
+
 use-extension:
   "@microsoft.azure/autorest.modeler": "2.3.45" # keep in sync with package.json's dev dependency in order to have meaningful tests
 
