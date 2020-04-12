@@ -5,6 +5,7 @@
 
 import { Example, ReferenceType, ExampleWarning, ExampleVariable } from "../Common/Example"
 import { Indent, ToSnakeCase } from "../Common/Helpers";
+import { type } from "os";
 
 export function GeneratePythonIntegrationTest(model: Example[],
                                               config: any,
@@ -160,7 +161,24 @@ export function GeneratePythonIntegrationTest(model: Example[],
                     }
                 }
             } else {
-                // XXX - more complex body that needs to be flattened
+                let body = example.GetExampleBody();
+                for (let k in body) {
+                    if (typeof body[k] == "object") {
+                        var json: string[] = GetExampleBodyJson(_PythonizeBody(body[k]));
+
+                        for (let line of json)
+                        {
+                            if (line.startsWith("{"))
+                            {
+                                output.push("        " + ToSnakeCase(k).toUpperCase() +  " = " + line);
+                            }
+                            else
+                            {
+                                output.push("        " + line);
+                            }
+                        }        
+                    }
+                }
             }
         }
 
@@ -173,7 +191,11 @@ export function GeneratePythonIntegrationTest(model: Example[],
                 for (let k in body) {
                     if (clientParams != "") clientParams += ", ";
                     // XXX - support more complex bodies
-                    clientParams += ToSnakeCase(k) + "=\"" + body[k] + "\"";
+                    if (typeof body[k] == "object") {
+                        clientParams += ToSnakeCase(k) + "= + ToSnakeCase(k).toUpperCase() + ";
+                    } else {
+                        clientParams += ToSnakeCase(k) + "=\"" + body[k] + "\"";
+                    }
                 }
             } else {
                 if (clientParams != "") clientParams += ", ";
