@@ -146,34 +146,48 @@ export function GeneratePythonIntegrationTest(model: Example[],
 
         if (hasBody)
         {
-            var json: string[] = GetExampleBodyJson(_PythonizeBody(example.GetExampleBody()));
-            for (let line of json)
-            {
-                if (line.startsWith("{"))
+            if (!example.FlattenBody) {
+                var json: string[] = GetExampleBodyJson(_PythonizeBody(example.GetExampleBody()));
+                for (let line of json)
                 {
-                    output.push("        BODY = " + line);
+                    if (line.startsWith("{"))
+                    {
+                        output.push("        BODY = " + line);
+                    }
+                    else
+                    {
+                        output.push("        " + line);
+                    }
                 }
-                else
-                {
-                    output.push("        " + line);
+            } else {
+                // XXX - more complex body that needs to be flattened
+            }
+        }
+
+        let clientParams = _UrlToParameters(example.Url);
+
+        if (hasBody) {
+            if (example.FlattenBody) {
+                let body = example.GetExampleBody();
+
+                for (let k in body) {
+                    if (clientParams != "") clientParams += ", ";
+                    // XXX - support more complex bodies
+                    clientParams += ToSnakeCase(k) + "=\"" + body[k] + "\"";
                 }
+            } else {
+                if (clientParams != "") clientParams += ", ";
+                clientParams += "body=BODY";
             }
         }
 
         // format params like: xxx, xxx, xxx
-        let clientParams = _UrlToParameters(example.Url);
-        if (clientParams && hasBody)
-        {
-            clientParams += ', body=BODY';
-        }
-        else if (hasBody)
-        {
-            clientParams = 'body=BODY';
-        }
 
         let disabled = config[ci]['disabled'] ? "# " : "";
 
-        output.push("        " + disabled + "result = self.mgmt_client." + ToSnakeCase(example.OperationName) + "." + ToSnakeCase(example.MethodName) +
+        output.push("        " + disabled + "result = self.mgmt_client." +
+                    ((ToSnakeCase(example.OperationName) != "") ? (ToSnakeCase(example.OperationName) + ".") : "") +
+                    ToSnakeCase(example.MethodName) +
                                          "(" + clientParams + ")");
         if (example.LongRunning)
         {

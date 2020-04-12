@@ -69,6 +69,7 @@ extension.Add("test", async autoRestApi => {
         const cli = await autoRestApi.GetValue("cli");
         const python = await autoRestApi.GetValue("python");
         const namespace = python['namespace'];
+        const payloadFlatteningThreshold = python['payload-flattening-threshold'];
         let testScenario = cli["test-setup"] || cli["test-scenario"] || cli["test"];
 
         if (!namespace)
@@ -112,7 +113,7 @@ extension.Add("test", async autoRestApi => {
             // PROCESS EXAMPLES
             //
             //-------------------------------------------------------------------------------------------------------------------------
-            let exampleProcessor = new ExampleProcessor(swagger, testScenario);
+            let exampleProcessor = new ExampleProcessor(swagger, testScenario, payloadFlatteningThreshold);
             let examples: Example[] = exampleProcessor.GetExamples();
 
             //-------------------------------------------------------------------------------------------------------------------------
@@ -123,7 +124,7 @@ extension.Add("test", async autoRestApi => {
             if (!testScenario)
             {
                 testScenario = GenerateDefaultTestScenario(examples, Warning);
-                exampleProcessor = new ExampleProcessor(swagger, testScenario);
+                exampleProcessor = new ExampleProcessor(swagger, testScenario, payloadFlatteningThreshold);
             }
 
             //-------------------------------------------------------------------------------------------------------------------------

@@ -53,7 +53,8 @@ export class Example
                         operationName: string,
                         methodName: string,
                         longRunning: boolean,
-                        warnings: ExampleWarning[])
+                        warnings: ExampleWarning[],
+                        flattenBody: boolean)
     {
         this.Example = example;
         this.Url = url;
@@ -70,6 +71,7 @@ export class Example
         this.MethodName = methodName;
         this.LongRunning = longRunning;
         this.Warnings = warnings;
+        this.FlattenBody = flattenBody;
     }
 
     public Method: string;
@@ -87,6 +89,7 @@ export class Example
     public ReferenceTypes: ReferenceType[];
     public LongRunning: boolean = false;
     public Warnings: ExampleWarning[] = [];
+    public FlattenBody: boolean = false;
 
     public GetExampleApiVersion(): string
     {

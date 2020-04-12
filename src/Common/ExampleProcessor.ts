@@ -8,11 +8,12 @@ import { ToSnakeCase, ToCamelCase } from "../Common/Helpers"
 
 export class ExampleProcessor
 {
-    public constructor (swagger: any, testScenario: any)
+    public constructor (swagger: any, testScenario: any, payloadFlatteningThreshold: number)
     {
         this._examples = [];
         this._swagger = swagger;
         this._testScenario = testScenario;
+        this._payloadFlatteningThreshold = payloadFlatteningThreshold;
 
         for (var operationIdx = 0; operationIdx < this._swagger.operations.length; operationIdx++)
         {
@@ -50,7 +51,7 @@ export class ExampleProcessor
                         longRunning = true;
                     }
 
-                    // find example body
+                    let flattenBody = false;
                     let exampleBody = null;
                     for (let k in body["parameters"]) {
                         if (typeof body["parameters"][k] == "object") {
@@ -60,6 +61,13 @@ export class ExampleProcessor
 
                     if (exampleBody != null) {
                         this.ProcessExample(exampleBody, bodyDef);
+
+                        if (bodyDef) {
+                            let propertiesCount = this.CountProperties(bodyDef);
+                            if (propertiesCount <= this._payloadFlatteningThreshold) {
+                                flattenBody = true;
+                            }
+                        }
                     }
                     this.ScanExampleForRefsAndVars(method['httpMethod'], url, method['url'], filename, body, refs, vars);
 
@@ -76,7 +84,8 @@ export class ExampleProcessor
                                               operation['name']['raw'],
                                               method['name']['raw'],
                                               longRunning,
-                                              this._warnings);
+                                              this._warnings,
+                                              flattenBody);
                     this._examples.push(example);
                 }
             }
@@ -95,6 +104,7 @@ export class ExampleProcessor
     private _warnings: ExampleWarning[] = []
     private _references: ReferenceType[] = [];
     private _exampleId: string = null;
+    private _payloadFlatteningThreshold = 0;
 
     public GetWarnings(): ExampleWarning[]
     {
@@ -542,6 +552,21 @@ export class ExampleProcessor
         });
 
         return found;
+    }
+
+    private CountProperties(bodyDef: any): number {
+        let propertiesCount = 0;
+        
+        bodyDef['properties'].forEach(element => {
+            if (element['extensions'] && element['extensions']['x-ms-client-flatten']) {
+                let submodel = this.FindModelType(element['modelType']['$ref']);
+                propertiesCount += (this.CountProperties(submodel));
+            } else {
+                propertiesCount++;
+            }         
+        });
+
+        return propertiesCount;
     }
     
     public MethodsTotal: number;
