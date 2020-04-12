@@ -25,6 +25,15 @@ export class ExampleProcessor
                     // XXX - warning, no examples
                     continue;
 
+                // find body parameter
+                let parameters = method['parameters'];
+                let bodyDef = null;
+                parameters.forEach(p => {
+                    if (p["location"] == "body") {
+                        bodyDef = this.FindModelType(p["modelType"]["$ref"]);
+                    }
+                });
+
                 var examplesDictionary = method['extensions']['x-ms-examples'];
                 for (var k in examplesDictionary)
                 {
@@ -41,7 +50,17 @@ export class ExampleProcessor
                         longRunning = true;
                     }
 
-                    this.ProcessExample(body);
+                    // find example body
+                    let exampleBody = null;
+                    for (let k in body["parameters"]) {
+                        if (typeof body["parameters"][k] == "object") {
+                            exampleBody = body["parameters"][k];
+                        }
+                    }
+
+                    if (exampleBody != null) {
+                        this.ProcessExample(exampleBody, bodyDef);
+                    }
                     this.ScanExampleForRefsAndVars(method['httpMethod'], url, method['url'], filename, body, refs, vars);
 
                     var example = new Example(body,
@@ -133,14 +152,14 @@ export class ExampleProcessor
     }
 
 
-    private ProcessExample(body: any)
+    private ProcessExample(body: any, bodyDef: any)
     {
         if (body instanceof Array)
         {
             // va.Count
             for (var i = 0; i < body.length; i++)
             {
-                this.ProcessExample(body[i]);
+                this.ProcessExample(body[i], null);
             }
         }
         else if (typeof body == 'object')
@@ -149,6 +168,7 @@ export class ExampleProcessor
             for (var pp in body)
             {
                 var subv: any = body[pp];
+                let flatten: boolean = false;
 
                 if (typeof subv == 'string')
                 {
@@ -159,7 +179,28 @@ export class ExampleProcessor
                 }
                 else
                 {
-                    this.ProcessExample(subv);
+                    if (bodyDef != null) {
+                        // find definition
+                        if (bodyDef["properties"]) {
+                            bodyDef["properties"].forEach(p => {
+                                if (p['name']['raw'] == pp) {
+                                    if (p['extensions'] && p['extensions']['x-ms-client-flatten']) {
+                                        flatten = true;
+                                    }
+                                }
+                            });
+                        }
+                    }
+
+                    this.ProcessExample(subv, null);
+                }
+
+                // check if this property must be flattened
+                if (flatten) {
+                    for (let k in subv) {
+                        body[k] = subv[k];
+                    }
+                    delete body[pp];
                 }
             }
 
@@ -488,6 +529,19 @@ export class ExampleProcessor
         }
     
         return name;
+    }
+
+    private FindModelType(ref: string): any
+    {
+        let types: any[] = this._swagger["modelTypes"];
+        let found = null;
+        types.forEach(m => {
+            if (m["$id"] == ref) {
+                found = m;
+            }
+        });
+
+        return found;
     }
     
     public MethodsTotal: number;

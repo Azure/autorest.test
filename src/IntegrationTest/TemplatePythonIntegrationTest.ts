@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license output.pushrmation.
  *--------------------------------------------------------------------------------------------*/
 
-import { Example, ReferenceType, ExampleWarning } from "../Common/Example"
+import { Example, ReferenceType, ExampleWarning, ExampleVariable } from "../Common/Example"
 import { Indent, ToSnakeCase } from "../Common/Helpers";
 
 export function GeneratePythonIntegrationTest(model: Example[],
@@ -22,6 +22,23 @@ export function GeneratePythonIntegrationTest(model: Example[],
         e.ReferenceTypes.forEach(r => {
             if (refs.indexOf(r) < 0) {
                 refs.push(r);
+            }
+        });
+    });
+
+    // get variables from all examples
+    let vars: ExampleVariable[] = [];
+
+    model.forEach(e => {
+        e.Variables.forEach(v => {
+            let found: boolean = false;
+            vars.forEach(tv => {
+                if (tv.name == v.name) {
+                    found = true;
+                }
+            });
+            if (!found) {
+                vars.push(v);
             }
         });
     });
@@ -91,11 +108,17 @@ export function GeneratePythonIntegrationTest(model: Example[],
     //output.push("        account_name = self.get_resource_name('pyarmcdn')");
     output.push("");
 
-    if (needSubscriptionId)
-    {
+    //if (needSubscriptionId)
+    //{
         output.push("        SUBSCRIPTION_ID = self.settings.SUBSCRIPTION_ID");
-    }
-    output.push("        RESOURCE_GROUP_NAME = resource_group.name");
+    //}
+    output.push("        RESOURCE_GROUP = resource_group.name");
+
+    vars.forEach(v => {
+        if (v.name != "resource_group") {
+            output.push("        " + v.name.toUpperCase() + " = \"" + v.value + "\"");
+        }
+    });
 
     if (hasStorageAccountPreparer)
     {
