@@ -90,8 +90,6 @@ export function GeneratePythonIntegrationTest(model: Example[],
     output.push("    def " + testName + "(self" + preparersParamList + "):");
     //output.push("        account_name = self.get_resource_name('pyarmcdn')");
     output.push("");
-    // XXX - this is service specific and should be fixed
-    output.push("        SERVICE_NAME = \"myapimrndxyz\"");
 
     if (needSubscriptionId)
     {
@@ -150,11 +148,13 @@ export function GeneratePythonIntegrationTest(model: Example[],
             clientParams = 'body=BODY';
         }
 
-        output.push("        result = self.mgmt_client." + ToSnakeCase(example.OperationName) + "." + ToSnakeCase(example.MethodName) +
+        let disabled = config[ci]['disabled'] ? "# " : "";
+
+        output.push("        " + disabled + "result = self.mgmt_client." + ToSnakeCase(example.OperationName) + "." + ToSnakeCase(example.MethodName) +
                                          "(" + clientParams + ")");
         if (example.LongRunning)
         {
-            output.push("        result = result.result()");
+            output.push("        " + disabled + "result = result.result()");
         }
     }
 
