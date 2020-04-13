@@ -199,7 +199,7 @@ export function GeneratePythonIntegrationTest(model: Example[],
                 }
             } else {
                 if (clientParams != "") clientParams += ", ";
-                clientParams += "body=BODY";
+                clientParams += ToSnakeCase(example.GetExampleBodyName()) + "=BODY";
             }
         }
 

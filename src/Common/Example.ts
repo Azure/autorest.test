@@ -115,16 +115,13 @@ export class Example
         return JSON.parse(JSON.stringify(this.Example["parameters"]));
     }
 
-    public GetExampleBody(): any
+    public GetExampleBodyName(): string
     {
-        var body: any = null;
+        let bodyName: string = null;
 
         if ((this.Method != "get") && (this.Method != "delete"))
         {
             var props: any  = this.Example["parameters"];
-
-            var bodyName: string = "";
-
             for (var pp in props)
             {
                 var bodyObject: any = props[pp];
@@ -135,10 +132,14 @@ export class Example
                     break;
                 }
             }
-
-            body = this.Example["parameters"][bodyName];
         }
 
-        return body;
+        return bodyName;
+    }
+
+    public GetExampleBody(): any
+    {
+        let bodyName: string = this.GetExampleBodyName();
+        return (bodyName != null) ? this.Example["parameters"][bodyName] : null;
     }
 }
