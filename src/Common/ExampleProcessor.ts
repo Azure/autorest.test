@@ -51,6 +51,15 @@ export class ExampleProcessor
                         longRunning = true;
                     }
 
+                    let queryParameters: string[] = [];
+                    parameters.forEach(p => {
+                        if(p["location"] == "query") {
+                            if (body["parameters"][p["name"]["raw"]]) {
+                                queryParameters.push(p["name"]["raw"]);
+                            }   
+                        }
+                    });
+    
                     let flattenBody = false;
                     let exampleBody = null;
                     for (let k in body["parameters"]) {
@@ -85,7 +94,8 @@ export class ExampleProcessor
                                               method['name']['raw'],
                                               longRunning,
                                               this._warnings,
-                                              flattenBody);
+                                              flattenBody,
+                                              queryParameters);
                     this._examples.push(example);
                 }
             }

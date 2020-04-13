@@ -203,6 +203,16 @@ export function GeneratePythonIntegrationTest(model: Example[],
             }
         }
 
+        // attach query parameters
+        if (example.QueryParameters.length > 0) {
+            example.QueryParameters.forEach(qp => {
+                if (qp != "api-version") {
+                    if (clientParams != "") clientParams += ", ";
+                    clientParams += ToSnakeCase(qp) + "=\"" + example.Example["parameters"][qp] + "\"";
+                }
+            });
+        }
+
         // format params like: xxx, xxx, xxx
 
         let disabled = config[ci]['disabled'] ? "# " : "";

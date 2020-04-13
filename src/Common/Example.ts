@@ -54,7 +54,8 @@ export class Example
                         methodName: string,
                         longRunning: boolean,
                         warnings: ExampleWarning[],
-                        flattenBody: boolean)
+                        flattenBody: boolean,
+                        queryParameters: string[])
     {
         this.Example = example;
         this.Url = url;
@@ -72,6 +73,7 @@ export class Example
         this.LongRunning = longRunning;
         this.Warnings = warnings;
         this.FlattenBody = flattenBody;
+        this.QueryParameters = queryParameters;
     }
 
     public Method: string;
@@ -90,6 +92,7 @@ export class Example
     public LongRunning: boolean = false;
     public Warnings: ExampleWarning[] = [];
     public FlattenBody: boolean = false;
+    public QueryParameters: string[] = [];
 
     public GetExampleApiVersion(): string
     {
