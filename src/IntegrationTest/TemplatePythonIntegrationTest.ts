@@ -65,7 +65,7 @@ export function GeneratePythonIntegrationTest(model: Example[],
     output.push("# Methods Covered : " + methodsCovered);
     output.push("# Examples Total  : " + examplesTotal);
     output.push("# Examples Tested : " + examplesTested);
-    output.push("# Coverage %      : " + (methodsCovered / methodsTotal) * (examplesTested / examplesTotal) * 100);
+    output.push("# Coverage %      : " +  ((methodsCovered / methodsTotal) * (examplesTested / examplesTotal) * 100).toFixed());
     output.push("# ----------------------");
     output.push("");
 

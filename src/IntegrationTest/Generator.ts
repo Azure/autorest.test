@@ -66,7 +66,7 @@ export function GenerateIntegrationTest(artifactType: ArtifactType,
     logCb("Methods Covered : " + methodsCovered);
     logCb("Examples Total  : " + examplesTotal);
     logCb("Examples Tested : " + examplesTested);
-    logCb("Coverage %      : " + (methodsCovered / methodsTotal) * (examplesTested / examplesTotal) * 100);
+    logCb("Coverage %      : " + ((methodsCovered / methodsTotal) * (examplesTested / examplesTotal) * 100).toFixed());
     logCb("----------------------");
     logCb("");
 

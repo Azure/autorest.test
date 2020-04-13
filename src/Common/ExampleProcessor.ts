@@ -150,7 +150,9 @@ export class ExampleProcessor
                             {
                                 if (item['name'] == exampleId)
                                 {
-                                    this.ExamplesTested++;
+                                    if (!item['disabled']) {
+                                        this.ExamplesTested++;
+                                    }
                                     break;
                                 }
                             }
