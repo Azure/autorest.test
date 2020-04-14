@@ -510,7 +510,14 @@ export class ExampleProcessor
                             this._warnings.push(new ExampleWarning(this._exampleId, "non-standard resource name '" + splitted[idx] + "', should be '" + defaultName + "'"));
                         }
 
-                    newId += "/{{ " + this.PluralToSingular(ToSnakeCase(splitted[idx - 1])) + "_name }}";
+                        if (splitted[idx].charAt(0) == '{' && splitted[idx].charAt(1) != '{') {
+                            newId += "/{{ " + ToSnakeCase(splitted[idx].substr(1, splitted[idx].length - 2)) + " }}";
+                        }
+                        else
+                        {
+                            newId += splitted[idx];
+                        //    newId += "/{{ " + this.PluralToSingular(ToSnakeCase(splitted[idx - 1])) + "_name }}";
+                        }
                         idx++;
                     }
                 }
