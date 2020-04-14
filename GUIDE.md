@@ -60,3 +60,9 @@ Last piece of information printed out is test coverage information (this informa
     INFO: # Examples Tested : 10
     INFO: # Coverage %      : 100
     INFO: # ----------------------
+
+## How to Generate Coverage Report
+
+From **azure-sdk-for-python** folder run following command:
+
+    python tools/azure-sdk-tools/devtools_testutils/mgmt_test_stats.py > doc/dev/mgmt/coverage.md 
