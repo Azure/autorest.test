@@ -140,7 +140,7 @@ export function GeneratePythonIntegrationTest(model: Example[],
         if (example == null)
             continue;
 
-        let hasBody: boolean = (example.Method == "put" || example.Method == "post" || example.Method == "patch");
+        let hasBody: boolean = (example.GetExampleBodyName() != null);
 
         output.push("");
         output.push("        # " + example.Id + "[" + example.Method + "]");
@@ -199,7 +199,7 @@ export function GeneratePythonIntegrationTest(model: Example[],
                 }
             } else {
                 if (clientParams != "") clientParams += ", ";
-                clientParams += ToSnakeCase(example.GetExampleBodyName().toString()) + "=BODY";
+                clientParams += ToSnakeCase(example.GetExampleBodyName()) + "=BODY";
             }
         }
 
