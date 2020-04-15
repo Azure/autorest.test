@@ -7,6 +7,7 @@ import { Example, ExampleWarning } from "./Common/Example";
 
 // Generators
 import { GenerateIntegrationTest, GenerateDefaultTestScenario } from "./IntegrationTest/Generator";
+import { WSAEHOSTDOWN } from 'constants';
 
 export type LogCallback = (message: string) => void;
 export type FileCallback = (path: string, rows: string[]) => void;
@@ -68,15 +69,29 @@ extension.Add("test", async autoRestApi => {
         // we will derive default "package-name" and "root-name" from it
         const cli = await autoRestApi.GetValue("cli");
         const python = await autoRestApi.GetValue("python");
-        const namespace = python['namespace'];
+        let namespace = python['namespace'];
         const payloadFlatteningThreshold = python['payload-flattening-threshold'];
         let testScenario = cli["test-setup"] || cli["test-scenario"] || cli["test"];
 
         if (!namespace)
         {
+            Error(JSON.stringify(python));
             Error("\"namespace\" is not defined, please add readme.cli.md file to the specification.");
             return;
         }
+
+        let namespaceParts: string[] = namespace.split('.');
+
+        while (namespaceParts.length > 3) {
+            namespaceParts.pop();
+        }
+
+        if (namespaceParts.length < 3) {
+            Error("Wrong namespace: " + namespace);
+            return;
+        }
+
+        namespace = namespaceParts.join(".");
 
         // package name and group name can be guessed from namespace
         let packageName = namespace.replace(/\./g, '-');

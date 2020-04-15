@@ -192,7 +192,7 @@ export function GeneratePythonIntegrationTest(model: Example[],
                     if (clientParams != "") clientParams += ", ";
                     // XXX - support more complex bodies
                     if (typeof body[k] == "object") {
-                        clientParams += ToSnakeCase(k) + "= + ToSnakeCase(k).toUpperCase() + ";
+                        clientParams += ToSnakeCase(k) + "= " + ToSnakeCase(k).toUpperCase();
                     } else {
                         clientParams += ToSnakeCase(k) + "=\"" + body[k] + "\"";
                     }
@@ -208,7 +208,12 @@ export function GeneratePythonIntegrationTest(model: Example[],
             example.QueryParameters.forEach(qp => {
                 if (qp != "api-version") {
                     if (clientParams != "") clientParams += ", ";
-                    clientParams += ToSnakeCase(qp) + "=\"" + example.Example["parameters"][qp] + "\"";
+                    let paramName: string = ToSnakeCase(qp);
+
+                    if (paramName.startsWith("$")) {
+                        paramName = paramName.slice(1);
+                    }
+                    clientParams += paramName + "=\"" + example.Example["parameters"][qp] + "\"";
                 }
             });
         }

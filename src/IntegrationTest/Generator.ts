@@ -81,7 +81,7 @@ export function GenerateIntegrationTest(artifactType: ArtifactType,
                                             methodsCovered,
                                             examplesTotal,
                                             examplesTested);
-      path = "sdk/" + packageName.split('-').pop() + "/" +  packageName + "/tests/";
+      path = "sdk/" + packageName.split("-").pop() + "/" +  packageName + "/tests/";
       path += "test_cli_mgmt_" + cliName.replace(/-/g, '_') + ".py";
     }
     else
