@@ -12,6 +12,7 @@ export function GeneratePythonIntegrationTest(model: Example[],
                                               namespace: string,
                                               cliCommandName: string,
                                               mgmtClientName: string,
+                                              track2: boolean,
                                               methodsTotal: number,
                                               methodsCovered: number,
                                               examplesTotal: number,
@@ -224,6 +225,7 @@ export function GeneratePythonIntegrationTest(model: Example[],
 
         output.push("        " + disabled + "result = self.mgmt_client." +
                     ((ToSnakeCase(example.OperationName) != "") ? (ToSnakeCase(example.OperationName) + ".") : "") +
+                    ((example.LongRunning && track2) ? "begin_" : "") + 
                     ToSnakeCase(example.MethodName) +
                                          "(" + clientParams + ")");
         if (example.LongRunning)

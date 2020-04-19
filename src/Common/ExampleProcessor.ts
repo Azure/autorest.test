@@ -5,11 +5,13 @@
 
 import { Example, ExampleVariable, ReferenceType, ExampleWarning } from "./Example"
 import { ToSnakeCase, ToCamelCase } from "../Common/Helpers"
+import { LogCallback } from "../index"
 
 export class ExampleProcessor
 {
-    public constructor (swagger: any, testScenario: any, payloadFlatteningThreshold: number)
+    public constructor (swagger: any, testScenario: any, payloadFlatteningThreshold: number, warningCb: LogCallback)
     {
+        this._log = warningCb;
         this._examples = [];
         this._swagger = swagger;
         this._testScenario = testScenario;
@@ -575,15 +577,24 @@ export class ExampleProcessor
 
     private CountProperties(bodyDef: any): number {
         let propertiesCount = 0;
-        
-        bodyDef['properties'].forEach(element => {
-            if (element['extensions'] && element['extensions']['x-ms-client-flatten']) {
-                let submodel = this.FindModelType(element['modelType']['$ref']);
-                propertiesCount += (this.CountProperties(submodel));
-            } else {
-                propertiesCount++;
-            }         
-        });
+
+        if (bodyDef['properties'] == undefined) {
+            this._log("Counldn't find properties in model: " + JSON.stringify(bodyDef));
+        } else {
+            bodyDef['properties'].forEach(element => {
+                if (element['extensions'] && element['extensions']['x-ms-client-flatten']) {
+                    let submodel = this.FindModelType(element['modelType']['$ref']);
+
+                    if (submodel != null) {
+                        propertiesCount += (this.CountProperties(submodel));
+                    } else {
+                        this._log("Couldn't find model: " + submodel);
+                    }
+                } else {
+                    propertiesCount++;
+                }         
+            });
+        }
 
         return propertiesCount;
     }
@@ -592,4 +603,6 @@ export class ExampleProcessor
     public MethodsCovered: number;
     public ExamplesTotal: number;
     public ExamplesTested: number;
+
+    private _log: LogCallback;
 }

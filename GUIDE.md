@@ -1,12 +1,20 @@
 ## How to Generate Python Test
 
-    autorest --test --use=@autorest/test@latest --python-integration-test /_/azure-rest-api-specs/specification/storageimportexport/resource-manager/readme.md --output-folder=/_/azure-sdk-for-python
+    autorest --version=2.0.4407 --test --use=@autorest/test@latest --python-integration-test /_/azure-rest-api-specs/specification/storageimportexport/resource-manager/readme.md --output-folder=/_/azure-sdk-for-python
 
 or
 
-    autorest --test --use=. --python-integration-test /_/azure-rest-api-specs/specification/storageimportexport/resource-manager/readme.md --output-folder=/_/azure-sdk-for-python
+    autorest --version=2.0.4407 --test --use=. --python-integration-test /_/azure-rest-api-specs/specification/storageimportexport/resource-manager/readme.md --output-folder=/_/azure-sdk-for-python
 
 when executing the source.
+
+For **track2** packages add **--track2** option:
+
+    autorest --version=2.0.4407 --test --use=@autorest/test@latest --python-integration-test --track2 /_/azure-rest-api-specs/specification/storageimportexport/resource-manager/readme.md --output-folder=/_/azure-sdk-for-python
+
+or
+
+    autorest --version=2.0.4407 --test --use=. --python-integration-test --track2 /_/azure-rest-api-specs/specification/storageimportexport/resource-manager/readme.md --output-folder=/_/azure-sdk-for-python
 
 When generating the test for the first time, test scenario is not defined, the extension will attempt to create default test scenario, following warnings will be visible in the output:
 

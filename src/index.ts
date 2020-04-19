@@ -70,14 +70,20 @@ extension.Add("test", async autoRestApi => {
         const cli = await autoRestApi.GetValue("cli");
         const python = await autoRestApi.GetValue("python");
         let namespace = python['namespace'];
+        let packageName = python['package-name'];
         const payloadFlatteningThreshold = python['payload-flattening-threshold'];
         let testScenario = cli["test-setup"] || cli["test-scenario"] || cli["test"];
+        let track2: boolean = await autoRestApi.GetValue("track2");
 
         if (!namespace)
         {
-            Error(JSON.stringify(python));
-            Error("\"namespace\" is not defined, please add readme.cli.md file to the specification.");
-            return;
+            if (!packageName) {
+                Error(JSON.stringify(python));
+                Error("\"namespace\" is not defined, please add readme.cli.md file to the specification.");
+                return;
+            } else {
+                namespace = packageName.replace(/\-/g, '.');
+            }
         }
 
         let namespaceParts: string[] = namespace.split('.');
@@ -94,7 +100,9 @@ extension.Add("test", async autoRestApi => {
         namespace = namespaceParts.join(".");
 
         // package name and group name can be guessed from namespace
-        let packageName = namespace.replace(/\./g, '-');
+        if (!packageName) {
+            packageName = namespace.replace(/\./g, '-');
+        }
         let cliName = packageName.split('-').pop();
 
         /*----------------------------------------------------*/
@@ -128,7 +136,7 @@ extension.Add("test", async autoRestApi => {
             // PROCESS EXAMPLES
             //
             //-------------------------------------------------------------------------------------------------------------------------
-            let exampleProcessor = new ExampleProcessor(swagger, testScenario, payloadFlatteningThreshold);
+            let exampleProcessor = new ExampleProcessor(swagger, testScenario, payloadFlatteningThreshold, Warning);
             let examples: Example[] = exampleProcessor.GetExamples();
 
             //-------------------------------------------------------------------------------------------------------------------------
@@ -139,7 +147,7 @@ extension.Add("test", async autoRestApi => {
             if (!testScenario)
             {
                 testScenario = GenerateDefaultTestScenario(examples, Warning);
-                exampleProcessor = new ExampleProcessor(swagger, testScenario, payloadFlatteningThreshold);
+                exampleProcessor = new ExampleProcessor(swagger, testScenario, payloadFlatteningThreshold, Warning);
             }
 
             //-------------------------------------------------------------------------------------------------------------------------
@@ -164,6 +172,7 @@ extension.Add("test", async autoRestApi => {
                                         cliName,
                                         packageName,
                                         mgmtClientName,
+                                        track2,
                                         exampleProcessor.MethodsTotal,
                                         exampleProcessor.MethodsCovered,
                                         exampleProcessor.ExamplesTotal,
