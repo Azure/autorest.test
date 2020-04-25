@@ -194,6 +194,11 @@ export class ExampleProcessor
                 var subv: any = body[pp];
                 let flatten: boolean = false;
 
+                if (pp == 'tenantId') {
+                    // XXX - check if tenant id formatted properly and display warning if not
+                    body[pp] = "{{ tenant_id }}";
+                }
+
                 if (typeof subv == 'string')
                 {
                     if (subv.startsWith("/subscription"))

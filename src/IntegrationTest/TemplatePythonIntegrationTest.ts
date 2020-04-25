@@ -113,6 +113,7 @@ export function GeneratePythonIntegrationTest(model: Example[],
     //if (needSubscriptionId)
     //{
         output.push("        SUBSCRIPTION_ID = self.settings.SUBSCRIPTION_ID");
+        output.push("        TENANT_ID = self.settings.TENANT_ID");
     //}
     output.push("        RESOURCE_GROUP = resource_group.name");
 
@@ -278,7 +279,7 @@ function GetExampleBodyJson(body: any): string[]
         }
 
         // XXX - will this work?
-        if (l.indexOf("/subscription") >= 0)
+        if (l.indexOf("{{") >= 0)
         {
             var idx: number = 0;
             while ((idx = l.indexOf("{{", idx)) > 0)
