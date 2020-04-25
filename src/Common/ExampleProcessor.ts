@@ -517,8 +517,9 @@ export class ExampleProcessor
                         }
                         else
                         {
-                            newId += splitted[idx];
-                        //    newId += "/{{ " + this.PluralToSingular(ToSnakeCase(splitted[idx - 1])) + "_name }}";
+                            // FIND EXCEPTIONS
+                            // newId += "/" + splitted[idx];
+                            newId += "/{{ " + this.PluralToSingular(ToSnakeCase(splitted[idx - 1])) + "_name }}";
                         }
                         idx++;
                     }

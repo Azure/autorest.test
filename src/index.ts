@@ -69,8 +69,8 @@ extension.Add("test", async autoRestApi => {
         // we will derive default "package-name" and "root-name" from it
         const cli = await autoRestApi.GetValue("cli");
         const python = await autoRestApi.GetValue("python");
-        let namespace = python['namespace'];
-        let packageName = python['package-name'];
+        let namespace = python['namespace'] || cli['namespace'];
+        let packageName = python['package-name'] || cli['package-name'];
         const payloadFlatteningThreshold = python['payload-flattening-threshold'];
         let testScenario = cli["test-setup"] || cli["test-scenario"] || cli["test"];
         let track2: boolean = await autoRestApi.GetValue("track2");
