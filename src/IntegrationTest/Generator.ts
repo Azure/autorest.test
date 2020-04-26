@@ -44,6 +44,7 @@ export function GenerateDefaultTestScenario(
 
 export function GenerateIntegrationTest(artifactType: ArtifactType,
                                         testScenario: any,
+                                        postfix: string,
                                         examples: Example[],
                                         namespace: string,
                                         cliName: string,
@@ -84,12 +85,12 @@ export function GenerateIntegrationTest(artifactType: ArtifactType,
                                             examplesTotal,
                                             examplesTested);
       path = "sdk/" + packageName.split("-").pop() + "/" +  packageName + "/tests/";
-      path += "test_cli_mgmt_" + cliName.replace(/-/g, '_') + ".py";
+      path += "test_cli_mgmt_" + cliName.replace(/-/g, '_') + ((postfix != "") ? ("_" + postfix) : "") + ".py";
     }
     else
     {
         code = GenerateSwaggerIntegrationTest(examples, testScenario);
-        path += "test_cli_mgmt_" + cliName.replace(/-/g, '_') + ".py";
+        path += "test_cli_mgmt_" + cliName.replace(/-/g, '_') + ((postfix != "") ? ("_" + postfix) : "") + ".py";
     }
 
     fileCb(path, code);
