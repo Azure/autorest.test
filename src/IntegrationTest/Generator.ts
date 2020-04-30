@@ -70,8 +70,7 @@ export function GenerateIntegrationTest(artifactType: ArtifactType,
     logCb("Examples Tested : " + examplesTested);
     logCb("Coverage %      : " + ((methodsCovered / methodsTotal) * (examplesTested / examplesTotal) * 100).toFixed());
     logCb("----------------------");
-    logCb("");
-
+ 
     if (artifactType == ArtifactType.ArtifactTypePythonIntegrationTest)
     {
         code = GeneratePythonIntegrationTest(examples,

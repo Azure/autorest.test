@@ -73,7 +73,7 @@ extension.Add("test", async autoRestApi => {
         let packageName = python['package-name'] || cli['package-name'];
         const payloadFlatteningThreshold = python['payload-flattening-threshold'];
         let testScenario = cli["test-setup"] || cli["test-scenario"] || cli["test"];
-        let scenarios: any[] = testScenario ? GetScenarios(testScenario) : [];
+        let scenarios: any = testScenario ? GetScenarios(testScenario) : {};
         let track2: boolean = await autoRestApi.GetValue("track2");
 
         if (!namespace)
@@ -128,15 +128,15 @@ extension.Add("test", async autoRestApi => {
             // Generate Default Test Scenario
             //
             //-------------------------------------------------------------------------------------------------------------------------
-            if (scenarios.length == 0) {
+            if (Object.keys(scenarios).length == 0) {
                 let swagger = JSON.parse(iff);
                 let exampleProcessor = new ExampleProcessor(swagger, testScenario, payloadFlatteningThreshold, Warning);
                 let examples: Example[] = exampleProcessor.GetExamples();
                 testScenario = GenerateDefaultTestScenario(examples, Warning);
-                scenarios.push(testScenario);
+                scenarios[""] = testScenario;
             }
 
-            for (let k in scenarios) {
+            for (let k of Object.keys(scenarios)) {
                 //-------------------------------------------------------------------------------------------------------------------------
                 //
                 // PARSE INPUT MODEL
@@ -149,7 +149,7 @@ extension.Add("test", async autoRestApi => {
                 // PROCESS EXAMPLES
                 //
                 //-------------------------------------------------------------------------------------------------------------------------
-                let exampleProcessor = new ExampleProcessor(swagger, testScenario, payloadFlatteningThreshold, Warning);
+                let exampleProcessor = new ExampleProcessor(swagger, scenarios[k], payloadFlatteningThreshold, Warning);
                 let examples: Example[] = exampleProcessor.GetExamples();
 
                 //-------------------------------------------------------------------------------------------------------------------------
@@ -160,7 +160,7 @@ extension.Add("test", async autoRestApi => {
                 if (!testScenario)
                 {
                     testScenario = GenerateDefaultTestScenario(examples, Warning);
-                    exampleProcessor = new ExampleProcessor(swagger, testScenario, payloadFlatteningThreshold, Warning);
+                    exampleProcessor = new ExampleProcessor(swagger, scenarios[k], payloadFlatteningThreshold, Warning);
                 }
 
                 //-------------------------------------------------------------------------------------------------------------------------
