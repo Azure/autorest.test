@@ -30,17 +30,24 @@ export function GeneratePythonIntegrationTest(model: Example[],
 
     // get variables from all examples
     let vars: ExampleVariable[] = [];
-
+    let haveUnique: boolean = false;
     model.forEach(e => {
         e.Variables.forEach(v => {
-            let found: boolean = false;
+            let found: ExampleVariable = null;
             vars.forEach(tv => {
                 if (tv.name == v.name) {
-                    found = true;
+                    found = tv;
                 }
             });
-            if (!found) {
+            if (found == null) {
                 vars.push(v);
+                if (v.unique) haveUnique = true;
+            } else {
+                // make sure unique is propagated -- shouldn't be here
+                if (v.unique) {
+                    found.unique = true;
+                    haveUnique = true
+                }
             }
         });
     });
@@ -110,6 +117,9 @@ export function GeneratePythonIntegrationTest(model: Example[],
     //output.push("        account_name = self.get_resource_name('pyarmcdn')");
     output.push("");
 
+    if (haveUnique) {
+        output.push("        UNIQUE = resource_group.name[-4:]");
+    }
     //if (needSubscriptionId)
     //{
         output.push("        SUBSCRIPTION_ID = self.settings.SUBSCRIPTION_ID");
@@ -119,7 +129,7 @@ export function GeneratePythonIntegrationTest(model: Example[],
 
     vars.forEach(v => {
         if (v.name != "resource_group") {
-            output.push("        " + v.name.toUpperCase() + " = \"" + v.value + "\"");
+            output.push("        " + v.name.toUpperCase() + " = \"" + v.value + "\"" + (v.unique ? " + UNIQUE" : ""));
         }
     });
 

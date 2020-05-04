@@ -20,6 +20,15 @@ export class ExampleProcessor
         for (var operationIdx = 0; operationIdx < this._swagger.operations.length; operationIdx++)
         {
             var operation = this._swagger.operations[operationIdx];
+
+            // find out if we have check_name_availability
+            let haveCheckNameAvailability: boolean = false;
+            for (var methodIdx = 0; methodIdx < operation.methods.length; methodIdx++)
+            {
+                var method = operation.methods[methodIdx];
+                if (method['name']['raw'] == "CheckNameAvailability") haveCheckNameAvailability = true;
+            }
+
             for (var methodIdx = 0; methodIdx < operation.methods.length; methodIdx++)
             {
                 var method = operation.methods[methodIdx];
@@ -80,7 +89,7 @@ export class ExampleProcessor
                             }
                         }
                     }
-                    this.ScanExampleForRefsAndVars(method['httpMethod'], url, method['url'], filename, body, refs, vars);
+                    this.ScanExampleForRefsAndVars(method['httpMethod'], url, method['url'], filename, body, haveCheckNameAvailability, refs, vars);
 
                     var example = new Example(body,
                                               url,
@@ -309,9 +318,9 @@ export class ExampleProcessor
         return filename;
     }
 
-    private ScanExampleForRefsAndVars(method: string, url: string, unprocessedUrl: string, filename: string, example: any, refs: string[], vars: ExampleVariable[])
+    private ScanExampleForRefsAndVars(method: string, url: string, unprocessedUrl: string, filename: string, example: any, haveCheckNameAvailability: boolean, refs: string[], vars: ExampleVariable[])
     {
-        this.ExtractVarsFromUrl(url, unprocessedUrl, vars);
+        this.ExtractVarsFromUrl(url, unprocessedUrl, (method == "put") ? haveCheckNameAvailability : false, vars);
 
         var parts: string[] = url.split("/");
 
@@ -378,7 +387,7 @@ export class ExampleProcessor
                             {
                                 refs.push(this.GetFilenameFromUrl(subv, "put", false));
                                 
-                                this.ExtractVarsFromUrl(subv, null, vars);
+                                this.ExtractVarsFromUrl(subv, null, false, vars);
 
                                 // [ZIM] this is initial, very simple reference implementation
                                 if (subv.indexOf("/storageAccounts/") >=0)
@@ -401,10 +410,11 @@ export class ExampleProcessor
         }
     }
 
-    private ExtractVarsFromUrl(url: string, unprocessedUrl: string, vars: ExampleVariable[])
+    private ExtractVarsFromUrl(url: string, unprocessedUrl: string, haveCheckNameAvailability: boolean, vars: ExampleVariable[])
     {
         var parts: string[] = url.split("/");
         var unprocessedParts: string[] = (unprocessedUrl ? unprocessedUrl.split("/") : null);
+        var last: ExampleVariable = null;
 
         for (var i: number = 0; i < parts.length; i++)
         {
@@ -425,13 +435,24 @@ export class ExampleProcessor
                         for (var v of vars)
                         {
                             if (v.name == varName)
+                            {
                                 found = true;
+                                last = v;
+                            }
                         }
 
-                        if (!found)
-                            vars.push(new ExampleVariable(varName, varValue, swaggerName));
+                        if (!found) {
+                            last = new ExampleVariable(varName, varValue, swaggerName)
+                            vars.push(last);
+                        }
                     }
                 }
+            }
+        }
+
+        if (haveCheckNameAvailability) {
+            if (last != null) {
+                last.unique = true;
             }
         }
     }

@@ -32,10 +32,12 @@ export class ExampleVariable
         this.name = name;
         this.value = value;
         this.swaggerName = swaggerName;
+        this.unique = false;
     }
     public name: string;
     public value: string;
     public swaggerName: string;
+    public unique: boolean;
 }
 
 export class Example
