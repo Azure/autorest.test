@@ -539,7 +539,9 @@ export class ExampleProcessor
                         }
 
                         if (splitted[idx].charAt(0) == '{' && splitted[idx].charAt(1) != '{') {
-                            newId += "/{{ " + ToSnakeCase(splitted[idx].substr(1, splitted[idx].length - 2)) + " }}";
+                            let name = ToSnakeCase(splitted[idx].substr(1, splitted[idx].length - 2));
+                            if (name == "location") name = "azure_location"
+                            newId += "/{{ " + name + " }}";
                         }
                         else
                         {

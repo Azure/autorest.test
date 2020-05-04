@@ -128,7 +128,7 @@ export function GeneratePythonIntegrationTest(model: Example[],
     output.push("        RESOURCE_GROUP = resource_group.name");
 
     vars.forEach(v => {
-        if (v.name != "resource_group") {
+        if (v.name != "resource_group" && v.name != "azure_location") {
             output.push("        " + v.name.toUpperCase() + " = \"" + v.value + "\"" + (v.unique ? " + UNIQUE" : ""));
         }
     });
