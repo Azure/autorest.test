@@ -607,6 +607,10 @@ export class ExampleProcessor
     private CountProperties(bodyDef: any): number {
         let propertiesCount = 0;
 
+        if (bodyDef['baseModelType'] != undefined) {
+            propertiesCount += this.CountProperties(bodyDef['baseModelType']);
+        }
+
         if (bodyDef['properties'] == undefined) {
             this._log("Counldn't find properties in model: " + JSON.stringify(bodyDef));
         } else {
