@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Example } from "./Example"
+import { Example, ExampleVariable } from "./Example"
 
 export class Model
 {
@@ -72,4 +72,46 @@ export class Model
     public needVirtualMachine() : boolean {
         return false;
     }
+
+    public getVars(): any[] {
+        if (this._vars == null) {
+            this.AggregateVars();
+        }
+        return this._vars;
+    }
+
+    public haveUnique(): boolean {
+        return this._haveUnique;
+    }
+
+    private AggregateVars() {
+        // get variables from all examples
+        let vars: ExampleVariable[] = [];
+        this._haveUnique = false;
+        this.examples.forEach(e => {
+            e.Variables.forEach(v => {
+                let found: ExampleVariable = null;
+                vars.forEach(tv => {
+                    if (tv.name == v.name) {
+                        found = tv;
+                    }
+                });
+                if (found == null) {
+                    vars.push(v);
+                    if (v.unique) this._haveUnique = true;
+                } else {
+                    // make sure unique is propagated -- shouldn't be here
+                    if (v.unique) {
+                        found.unique = true;
+                        this._haveUnique = true
+                    }
+                }
+            });
+        });
+        this._vars = vars;
+    }
+
+    private _haveUnique: boolean = false;
+    private _vars: ExampleVariable[] = null;
 }
+

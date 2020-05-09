@@ -21,28 +21,7 @@ export function GeneratePythonIntegrationTest(model: Model) : string[] {
     });
 
     // get variables from all examples
-    let vars: ExampleVariable[] = [];
-    let haveUnique: boolean = false;
-    model.examples.forEach(e => {
-        e.Variables.forEach(v => {
-            let found: ExampleVariable = null;
-            vars.forEach(tv => {
-                if (tv.name == v.name) {
-                    found = tv;
-                }
-            });
-            if (found == null) {
-                vars.push(v);
-                if (v.unique) haveUnique = true;
-            } else {
-                // make sure unique is propagated -- shouldn't be here
-                if (v.unique) {
-                    found.unique = true;
-                    haveUnique = true
-                }
-            }
-        });
-    });
+    let vars: ExampleVariable[] = model.getVars();
 
     var output: string[] = [];
 
@@ -282,7 +261,7 @@ export function GeneratePythonIntegrationTest(model: Model) : string[] {
     //output.push("        account_name = self.get_resource_name('pyarmcdn')");
     output.push("");
 
-    if (haveUnique) {
+    if (model.haveUnique()) {
         output.push("        UNIQUE = resource_group.name[-4:]");
     }
     //if (needSubscriptionId)
