@@ -155,6 +155,11 @@ export function GeneratePythonIntegrationTest(model: Example[],
         let hasBody: boolean = (example.GetExampleBodyName() != null);
 
         output.push("");
+
+        if (config[ci]['comment'] != null) {
+            output.push("        # " + config[ci]['comment']);
+        }
+
         output.push("        # " + example.Id + "[" + example.Method + "]");
 
         if (hasBody)
