@@ -83,7 +83,8 @@ export function GenerateIntegrationTest(artifactType: ArtifactType,
                                             methodsCovered,
                                             examplesTotal,
                                             examplesTested);
-      path = "sdk/" + packageName.split("-").pop() + "/" +  packageName + "/tests/";
+      //path = "sdk/" + packageName.split("-").pop() + "/" +  packageName + "/tests/";
+      path = "tests/";
       path += "test_cli_mgmt_" + cliName.replace(/-/g, '_') + ((postfix != "") ? ("_" + postfix) : "") + ".py";
     }
     else
