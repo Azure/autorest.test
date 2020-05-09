@@ -3,24 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license output.pushrmation.
  *--------------------------------------------------------------------------------------------*/
 
-import { Example, ReferenceType, ExampleWarning, ExampleVariable } from "../Common/Example"
+import { Model } from "../Common/Model";
+import { Example, ReferenceType, ExampleWarning, ExampleVariable } from "../Common/Example";
 import { Indent, ToSnakeCase } from "../Common/Helpers";
 import { type } from "os";
 
-export function GeneratePythonIntegrationTest(model: Example[],
-                                              config: any,
-                                              namespace: string,
-                                              cliCommandName: string,
-                                              mgmtClientName: string,
-                                              track2: boolean,
-                                              methodsTotal: number,
-                                              methodsCovered: number,
-                                              examplesTotal: number,
-                                              examplesTested: number) : string[] {
+export function GeneratePythonIntegrationTest(model: Model) : string[] {
 
     // get references from all examples
     let refs: ReferenceType[] = [];
-    model.forEach(e => {
+    model.examples.forEach(e => {
         e.ReferenceTypes.forEach(r => {
             if (refs.indexOf(r) < 0) {
                 refs.push(r);
@@ -31,7 +23,7 @@ export function GeneratePythonIntegrationTest(model: Example[],
     // get variables from all examples
     let vars: ExampleVariable[] = [];
     let haveUnique: boolean = false;
-    model.forEach(e => {
+    model.examples.forEach(e => {
         e.Variables.forEach(v => {
             let found: ExampleVariable = null;
             vars.forEach(tv => {
@@ -54,8 +46,8 @@ export function GeneratePythonIntegrationTest(model: Example[],
 
     var output: string[] = [];
 
-    let className: string = "Mgmt" + mgmtClientName.split("ManagementClient")[0] + "Test";
-    let testName: string = "test_" + cliCommandName.replace(/-/g, '_');
+    let className: string = "Mgmt" + model.mgmtClientName.split("ManagementClient")[0] + "Test";
+    let testName: string = "test_" + model.cliCommandName.replace(/-/g, '_');
 
     output.push("# coding: utf-8");
     output.push("");
@@ -69,18 +61,18 @@ export function GeneratePythonIntegrationTest(model: Example[],
     output.push("");
     output.push("# TEST SCENARIO COVERAGE");
     output.push("# ----------------------");
-    output.push("# Methods Total   : " + methodsTotal);
-    output.push("# Methods Covered : " + methodsCovered);
-    output.push("# Examples Total  : " + examplesTotal);
-    output.push("# Examples Tested : " + examplesTested);
-    output.push("# Coverage %      : " +  ((methodsCovered / methodsTotal) * (examplesTested / examplesTotal) * 100).toFixed());
+    output.push("# Methods Total   : " + model.methodsTotal);
+    output.push("# Methods Covered : " + model.methodsCovered);
+    output.push("# Examples Total  : " + model.examplesTotal);
+    output.push("# Examples Tested : " + model.examplesTested);
+    output.push("# Coverage %      : " +  ((model.methodsCovered / model.methodsTotal) * (model.examplesTested / model.examplesTotal) * 100).toFixed());
     output.push("# ----------------------");
     output.push("");
 
     output.push("import unittest");
     output.push("");
     // XXX - proper namespace
-    output.push("import " + namespace);
+    output.push("import " + model.namespace);
 
     let hasStorageAccountPreparer: boolean = (refs.indexOf(ReferenceType.STORAGE) >= 0);
     let needSubscriptionId: boolean = false;
@@ -101,7 +93,7 @@ export function GeneratePythonIntegrationTest(model: Example[],
     output.push("    def setUp(self):");
     output.push("        super(" + className + ", self).setUp()");
     output.push("        self.mgmt_client = self.create_mgmt_client(");
-    output.push("            " + namespace + "." + mgmtClientName);
+    output.push("            " + model.namespace + "." + model.mgmtClientName);
     output.push("        )");
     output.push("    ");
     output.push("    @ResourceGroupPreparer(location=AZURE_LOCATION)");
@@ -138,14 +130,14 @@ export function GeneratePythonIntegrationTest(model: Example[],
         output.push("        STORAGE_ACCOUNT_NAME = storage_account.name");
     }
     
-    for (var ci = 0; ci < config.length; ci++)
+    for (var ci = 0; ci < model.config.length; ci++)
     {
         var example: Example = null;
-        for (var i = 0; i < model.length; i++)
+        for (var i = 0; i < model.examples.length; i++)
         {
-            if (model[i].Id == config[ci]['name'])
+            if (model.examples[i].Id == model.config[ci]['name'])
             {
-                example = model[i];
+                example = model.examples[i];
                 break;
             }
         }
@@ -156,8 +148,8 @@ export function GeneratePythonIntegrationTest(model: Example[],
 
         output.push("");
 
-        if (config[ci]['comment'] != null) {
-            output.push("        # " + config[ci]['comment']);
+        if (model.config[ci]['comment'] != null) {
+            output.push("        # " + model.config[ci]['comment']);
         }
 
         output.push("        # " + example.Id + "[" + example.Method + "]");
@@ -237,11 +229,11 @@ export function GeneratePythonIntegrationTest(model: Example[],
 
         // format params like: xxx, xxx, xxx
 
-        let disabled = config[ci]['disabled'] ? "# " : "";
+        let disabled = model.config[ci]['disabled'] ? "# " : "";
 
         output.push("        " + disabled + "result = self.mgmt_client." +
                     ((ToSnakeCase(example.OperationName) != "") ? (ToSnakeCase(example.OperationName) + ".") : "") +
-                    ((example.LongRunning && track2) ? "begin_" : "") + 
+                    ((example.LongRunning && model.track2) ? "begin_" : "") + 
                     ToSnakeCase(example.MethodName) +
                                          "(" + clientParams + ")");
         if (example.LongRunning)

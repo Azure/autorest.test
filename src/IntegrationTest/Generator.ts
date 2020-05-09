@@ -7,6 +7,7 @@ import { ArtifactType, FileCallback, LogCallback } from "../index"
 import { Example, ExampleWarning } from "../Common/Example";
 import { GeneratePythonIntegrationTest } from "./TemplatePythonIntegrationTest"
 import { GenerateSwaggerIntegrationTest } from "./TemplateSwaggerIntegrationTest"
+import { Model } from "../Common/Model";
 
 export function GenerateDefaultTestScenario(
     examples: Example[],
@@ -73,16 +74,17 @@ export function GenerateIntegrationTest(artifactType: ArtifactType,
  
     if (artifactType == ArtifactType.ArtifactTypePythonIntegrationTest)
     {
-        code = GeneratePythonIntegrationTest(examples,
-                                            testScenario,
-                                            namespace,
-                                            cliName,
-                                            mgmtClientName,
-                                            track2,
-                                            methodsTotal,
-                                            methodsCovered,
-                                            examplesTotal,
-                                            examplesTested);
+        let model: Model = new Model(examples,
+            testScenario,
+            namespace,
+            cliName,
+            mgmtClientName,
+            track2,
+            methodsTotal,
+            methodsCovered,
+            examplesTotal,
+            examplesTested)
+        code = GeneratePythonIntegrationTest(model);
       //path = "sdk/" + packageName.split("-").pop() + "/" +  packageName + "/tests/";
       path = "tests/";
       path += "test_cli_mgmt_" + cliName.replace(/-/g, '_') + ((postfix != "") ? ("_" + postfix) : "") + ".py";
