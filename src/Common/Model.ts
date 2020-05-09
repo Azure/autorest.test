@@ -40,4 +40,36 @@ export class Model
     public methodsCovered: number;
     public examplesTotal: number;
     public examplesTested: number;
+
+    public needCompute() : boolean {
+        return false;
+    }
+
+    public needNetwork() : boolean {
+        return false;
+    }
+
+    public needStorage() : boolean {
+        return false;
+    }
+
+    public needKeyvault() : boolean {
+        return false;
+    }
+
+    public needNetworkInterface() : boolean {
+        return false;
+    }
+
+    public needVirtualNetwork() : boolean {
+        return false;
+    }
+
+    public needSubnet() : boolean {
+        return false;
+    }
+
+    public needVirtualMachine() : boolean {
+        return false;
+    }
 }
