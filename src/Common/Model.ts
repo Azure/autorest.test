@@ -42,15 +42,17 @@ export class Model
     public examplesTested: number;
 
     public needCompute() : boolean {
-        return false;
+        return this.needVirtualMachine();
     }
 
     public needNetwork() : boolean {
-        return false;
+        return (this.needVirtualNetwork() ||
+                this.needSubnet() ||
+                this.needNetworkInterface());
     }
 
     public needStorage() : boolean {
-        return false;
+        return this.HaveVarMatching("^storage_account_.*$");
     }
 
     public needKeyvault() : boolean {
@@ -58,19 +60,20 @@ export class Model
     }
 
     public needNetworkInterface() : boolean {
-        return false;
-    }
+        return (this.HaveVarMatching("^network_interface_.*$") ||
+                this.needVirtualMachine());
+    }1
 
     public needVirtualNetwork() : boolean {
-        return false;
+        return this.HaveVarMatching("^virtual_network_.*$");
     }
 
     public needSubnet() : boolean {
-        return false;
+        return this.HaveVarMatching("^subnet_.*$");
     }
 
     public needVirtualMachine() : boolean {
-        return false;
+        return this.HaveVarMatching("^virtual_machine_.*$");
     }
 
     public getVars(): any[] {
@@ -82,6 +85,16 @@ export class Model
 
     public haveUnique(): boolean {
         return this._haveUnique;
+    }
+
+    private HaveVarMatching(exp: string) : boolean {
+        let regexp = new RegExp(exp);
+        let vars: ExampleVariable[] = this.getVars();
+
+        for (let i = 0; i < vars.length; i++) {
+            if (regexp.test(vars[i].name)) return true;
+        }
+        return false;
     }
 
     private AggregateVars() {

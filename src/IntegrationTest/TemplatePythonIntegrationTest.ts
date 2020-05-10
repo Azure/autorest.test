@@ -437,33 +437,43 @@ function GetExampleBodyJson(body: any): string[]
             l = l.replace(": false,", ": False,");
         }
 
-        // XXX - will this work?
-        if (l.indexOf("{{") >= 0)
-        {
-            var idx: number = 0;
-            while ((idx = l.indexOf("{{", idx)) > 0)
-            {
-                var start: number = idx;
-                var end: number = l.indexOf("}}", idx) + 2;
-                var part: string = l.substring(start, end);
-                var name: string = part.substring(2, part.length - 2).trim();
-                var isLast: boolean = l[end + 2] == '"';
-
-                if (!isLast)
-                {
-                    l = l.replace(part, "\" + " + name.toUpperCase() + " + \"");
-                }
-                else
-                {
-                    l = l.replace(part + "\"", "\" + " + name.toUpperCase());
-                }
-                idx = end + 2;
-            }
-        }
+        l = _ReplaceVariables(l);
 
         lines[i] = l;
     }
     return lines;
+}
+
+function _ReplaceVariables(l: string) : string {
+    if (l.indexOf("{{") >= 0)
+    {
+        var idx: number = 0;
+        while ((idx = l.indexOf("{{", idx)) > 0)
+        {
+            var start: number = idx;
+            var end: number = l.indexOf("}}", idx) + 2;
+            var part: string = l.substring(start, end);
+            var name: string = part.substring(2, part.length - 2).trim();
+
+            let prefix = "\" + ";
+            let postfix = " + \"";
+
+            if (l[end] == '"') {
+                postfix = "";
+                end++;
+            }
+
+            if (l[start -1 ] == '"') {
+                prefix = "";
+                start--;
+            }
+            part = l.substring(start, end);
+
+            l = l.replace(part, prefix + name.toUpperCase() + postfix);
+            idx = end + 2;
+        }
+    }
+    return l;
 }
 
 function _UrlToParameters(sourceUrl: string): string

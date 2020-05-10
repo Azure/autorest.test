@@ -401,6 +401,43 @@ export class ExampleProcessor
                             }
                         }
                     }
+
+                    if (pp == "storageAccountUrl") {
+                        v[pp] = "{{storage_account_url}}";
+                        let found = false;
+                        for (let v of vars)
+                        {
+                            if (v.name == "storage_account_url")
+                            {
+                                found = true;
+                            }
+                        }
+
+                        if (!found) {
+                            let v = new ExampleVariable("storage_account_url", "xxx", "storageAccountUrl");
+                            vars.push(v);
+                        }
+                        
+                    } else if (pp == "storageAccessKey" || pp == "storageAccountPrimaryKey") {
+                        let found = false;
+
+                        v[pp] = "{{storage_account_key}}";
+                        for (let vv of vars)
+                        {
+                            if (vv.name == "storage_account_key")
+                            {
+                                found = true;
+                            }
+                        }
+
+                        if (!found) {
+                            let vv = new ExampleVariable("storage_account_key", "xxx", "storageAccessKey");
+                            vars.push(vv);
+                        }
+                    } else if (pp == "location") {
+                        v[pp] = "{{azure_location}}";
+                    }
+
                 }
                 else
                 {
