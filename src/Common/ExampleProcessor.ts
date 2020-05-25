@@ -83,9 +83,7 @@ export class ExampleProcessor
                         this.ProcessExample(exampleBody, bodyDef);
 
                         if (bodyDef) {
-                            this._log(">>>>> COUNTING (" + k + ")");
                             let propertiesCount = this.CountProperties(bodyDef);
-                            this._log("<<<<< " + propertiesCount);
                             if (propertiesCount <= this._payloadFlatteningThreshold) {
                                 flattenBody = true;
                             }
@@ -696,7 +694,6 @@ export class ExampleProcessor
                     }
                 } else {                    
                     if (!element['isReadOnly']) {
-                        this._log("COUNTING PROPERTY: " + element['name']['raw'] + " --- " + element['isReadOnly']/* + " --- " + JSON.stringify(element)*/);
                         propertiesCount++;
                     }
                 }         
