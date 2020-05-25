@@ -42,13 +42,15 @@ export class Model
     public examplesTested: number;
 
     public needCompute() : boolean {
-        return this.needVirtualMachine();
+        return (this.needVirtualMachine() ||
+                this.needAvailabilitySet());
     }
 
     public needNetwork() : boolean {
         return (this.needVirtualNetwork() ||
                 this.needSubnet() ||
-                this.needNetworkInterface());
+                this.needNetworkInterface() ||
+                this.needLoadBalancer());
     }
 
     public needStorage() : boolean {
@@ -62,10 +64,14 @@ export class Model
     public needNetworkInterface() : boolean {
         return (this.HaveVarMatching("^network_interface_.*$") ||
                 this.needVirtualMachine());
-    }1
+    }
 
     public needVirtualNetwork() : boolean {
         return this.HaveVarMatching("^virtual_network_.*$");
+    }
+
+    public needLoadBalancer() : boolean {
+        return this.HaveVarMatching("^load_balancer_.*$");
     }
 
     public needSubnet() : boolean {
@@ -74,6 +80,10 @@ export class Model
 
     public needVirtualMachine() : boolean {
         return this.HaveVarMatching("^virtual_machine_.*$");
+    }
+
+    public needAvailabilitySet() : boolean {
+        return this.HaveVarMatching("^availability_set_.*$");
     }
 
     public getVars(): any[] {

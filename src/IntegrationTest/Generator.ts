@@ -6,6 +6,7 @@
 import { ArtifactType, FileCallback, LogCallback } from "../index"
 import { Example, ExampleWarning } from "../Common/Example";
 import { GeneratePythonIntegrationTest } from "./TemplatePythonIntegrationTest"
+import { GeneratePythonExample } from "./TemplatePythonExample"
 import { GenerateSwaggerIntegrationTest } from "./TemplateSwaggerIntegrationTest"
 import { Model } from "../Common/Model";
 
@@ -88,6 +89,23 @@ export function GenerateIntegrationTest(artifactType: ArtifactType,
       //path = "sdk/" + packageName.split("-").pop() + "/" +  packageName + "/tests/";
       path = "tests/";
       path += "test_cli_mgmt_" + cliName.replace(/-/g, '_') + ((postfix != "") ? ("_" + postfix) : "") + ".py";
+    }
+    else if (artifactType == ArtifactType.ArtifactTypePythonExample)
+    {
+        let model: Model = new Model(examples,
+            testScenario,
+            namespace,
+            cliName,
+            mgmtClientName,
+            track2,
+            methodsTotal,
+            methodsCovered,
+            examplesTotal,
+            examplesTested)
+        code = GeneratePythonExample(model);
+      //path = "sdk/" + packageName.split("-").pop() + "/" +  packageName + "/tests/";
+      path = "examples/";
+      path += "example_" + cliName.replace(/-/g, '_') + ((postfix != "") ? ("_" + postfix) : "") + ".py";
     }
     else
     {

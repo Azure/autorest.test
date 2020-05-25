@@ -17,7 +17,8 @@ const extension = new AutoRestExtension();
 export enum ArtifactType
 {
     ArtifactTypeSwaggerIntegrationTest,
-    ArtifactTypePythonIntegrationTest
+    ArtifactTypePythonIntegrationTest,
+    ArtifactTypePythonExample
 }
 
 extension.Add("test", async autoRestApi => {
@@ -72,6 +73,7 @@ extension.Add("test", async autoRestApi => {
         let namespace = python['namespace'] || cli['namespace'];
         let packageName = python['package-name'] || cli['package-name'];
         const payloadFlatteningThreshold = python['payload-flattening-threshold'];
+
         let testScenario = cli["test-setup"] || cli["test-scenario"] || cli["test"];
         let scenarios: any = testScenario ? GetScenarios(testScenario) : {};
         let track2: boolean = await autoRestApi.GetValue("track2");
@@ -109,7 +111,7 @@ extension.Add("test", async autoRestApi => {
         /*----------------------------------------------------*/
         let tag = await autoRestApi.GetValue("tag");
         Info(tag);
-
+        
         if (await autoRestApi.GetValue("swagger-integration-test"))
         {
             Info("GENERATION: --swagger-integration-test");
@@ -119,6 +121,11 @@ extension.Add("test", async autoRestApi => {
         {
             Info("GENERATION: --python-integration-test");
             artifactType = ArtifactType.ArtifactTypePythonIntegrationTest;
+        }
+        else if (await autoRestApi.GetValue("python-example"))
+        {
+            Info("GENERATION: --python-example");
+            artifactType = ArtifactType.ArtifactTypePythonExample;
         }
 
         for (let iff of inputFiles)
@@ -176,7 +183,9 @@ extension.Add("test", async autoRestApi => {
                 // INTEGRATION TESTS
                 //
                 //-------------------------------------------------------------------------------------------------------------------------
-                if (artifactType == ArtifactType.ArtifactTypeSwaggerIntegrationTest || artifactType == ArtifactType.ArtifactTypePythonIntegrationTest)
+                if (artifactType == ArtifactType.ArtifactTypeSwaggerIntegrationTest ||
+                    artifactType == ArtifactType.ArtifactTypePythonIntegrationTest ||
+                    artifactType == ArtifactType.ArtifactTypePythonExample)
                 {
                     GenerateIntegrationTest(artifactType,
                                             scenarios[k],

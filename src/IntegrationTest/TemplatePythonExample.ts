@@ -9,7 +9,7 @@ import { Indent, ToSnakeCase } from "../Common/Helpers";
 import { type } from "os";
 import { GetExampleBodyJson, _PythonizeBody, _UrlToParameters, _ReplaceVariables, AddVariables, AppendExample } from "./TemplatePythonCommon";
 
-export function GeneratePythonIntegrationTest(model: Model) : string[] {
+export function GeneratePythonExample(model: Model) : string[] {
 
     // get references from all examples
     let refs: ReferenceType[] = [];
@@ -23,11 +23,6 @@ export function GeneratePythonIntegrationTest(model: Model) : string[] {
 
     var output: string[] = [];
 
-    let className: string = "Mgmt" + model.mgmtClientName.split("ManagementClient")[0] + "Test";
-    let testName: string = "test_" + model.cliCommandName.replace(/-/g, '_');
-
-    output.push("# coding: utf-8");
-    output.push("");
     output.push("#-------------------------------------------------------------------------");
     output.push("# Copyright (c) Microsoft Corporation. All rights reserved.");
     output.push("# Licensed under the MIT License. See License.txt in the project root for");
@@ -35,19 +30,6 @@ export function GeneratePythonIntegrationTest(model: Model) : string[] {
     output.push("#--------------------------------------------------------------------------");
     output.push("");
 
-    output.push("");
-    output.push("# TEST SCENARIO COVERAGE");
-    output.push("# ----------------------");
-    output.push("# Methods Total   : " + model.methodsTotal);
-    output.push("# Methods Covered : " + model.methodsCovered);
-    output.push("# Examples Total  : " + model.examplesTotal);
-    output.push("# Examples Tested : " + model.examplesTested);
-    output.push("# Coverage %      : " +  ((model.methodsCovered / model.methodsTotal) * (model.examplesTested / model.examplesTotal) * 100).toFixed());
-    output.push("# ----------------------");
-    output.push("");
-
-    output.push("import unittest");
-    output.push("");
     // XXX - proper namespace
     output.push("import " + model.namespace);
 
@@ -60,19 +42,20 @@ export function GeneratePythonIntegrationTest(model: Model) : string[] {
         needSubscriptionId = true;
     }
 
-    output.push("from devtools_testutils import AzureMgmtTestCase" + preparers);
-
+    // add all the variables used in the example
     output.push("");
     output.push("AZURE_LOCATION = 'eastus'");
-    output.push("");
-    output.push("class " + className + "(AzureMgmtTestCase):");
-    output.push("");
-    output.push("    def setUp(self):");
-    output.push("        super(" + className + ", self).setUp()");
+    output.push("RESOURCE_GROUP = resource_group.name");
+    if (model.haveUnique()) {
+        output.push("UNIQUE = resource_group.name[-4:]");
+    }
+    output.push("SUBSCRIPTION_ID = self.settings.SUBSCRIPTION_ID");
+    output.push("TENANT_ID = self.settings.TENANT_ID");
+    AddVariables(model, "", output);
+
+    // XXX - create clients
     output.push("        self.mgmt_client = self.create_mgmt_client(");
     output.push("            " + model.namespace + "." + model.mgmtClientName);
-    output.push("        )");
-    output.push("    ");
 
     if (model.needCompute() ||
         model.needKeyvault() ||
@@ -255,21 +238,9 @@ export function GeneratePythonIntegrationTest(model: Model) : string[] {
         preparersParamList += ", storage_account";
     }
 
-    output.push("    def " + testName + "(self" + preparersParamList + "):");
+    //output.push("    def " + testName + "(self" + preparersParamList + "):");
     //output.push("        account_name = self.get_resource_name('pyarmcdn')");
     output.push("");
-
-    if (model.haveUnique()) {
-        output.push("        UNIQUE = resource_group.name[-4:]");
-    }
-    //if (needSubscriptionId)
-    //{
-        output.push("        SUBSCRIPTION_ID = self.settings.SUBSCRIPTION_ID");
-        output.push("        TENANT_ID = self.settings.TENANT_ID");
-    //}
-    output.push("        RESOURCE_GROUP = resource_group.name");
-
-    AddVariables(model, "        ", output);
 
     if (hasStorageAccountPreparer)
     {
@@ -278,15 +249,8 @@ export function GeneratePythonIntegrationTest(model: Model) : string[] {
     
     for (var ci = 0; ci < model.config.length; ci++)
     {
-        AppendExample(model, "        ", ci, output);
+        AppendExample(model, "", ci, output);
     }
-
-    output.push("");
-    output.push("");
-    output.push("#------------------------------------------------------------------------------");
-    output.push("if __name__ == '__main__':");
-    output.push("    unittest.main()");
-    output.push("");  // python pep8: need a blank line in the end.
 
     return output;
 }
