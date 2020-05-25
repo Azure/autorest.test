@@ -83,7 +83,9 @@ export class ExampleProcessor
                         this.ProcessExample(exampleBody, bodyDef);
 
                         if (bodyDef) {
+                            this._log(">>>>> COUNTING (" + k + ")");
                             let propertiesCount = this.CountProperties(bodyDef);
+                            this._log("<<<<< " + propertiesCount);
                             if (propertiesCount <= this._payloadFlatteningThreshold) {
                                 flattenBody = true;
                             }
@@ -641,7 +643,38 @@ export class ExampleProcessor
         return found;
     }
 
+    private FindModel(o: any, id: string): any {
+        let found: any = null;
+        if(o !== null && typeof o == "object" ) {
+            if (o['$id'] == id) {
+                found = o;
+            } else {
+                Object.entries(o).forEach(([key, value]) => {
+                    // key is either an array index or object key
+                    if (found == null) {
+                        found = this.FindModel(value, id);
+                    }
+                });
+            }
+        }
+
+        return found;
+    }
+
     private CountProperties(bodyDef: any): number {
+
+        if (bodyDef['$ref'] != undefined) {
+            //let newDef = this.FindModelType(bodyDef['$ref']);
+            let newDef = this.FindModel(this._swagger["modelTypes"], bodyDef['$ref']);
+
+            if (newDef != null) {
+                return this.CountProperties(newDef);
+            } else {
+                this._log("Counldn't find nodel: " + bodyDef['$ref']);
+                return 0;
+            }
+        }
+
         let propertiesCount = 0;
 
         if (bodyDef['baseModelType'] != undefined) {
@@ -650,6 +683,7 @@ export class ExampleProcessor
 
         if (bodyDef['properties'] == undefined) {
             this._log("Counldn't find properties in model: " + JSON.stringify(bodyDef));
+            this._log(JSON.stringify(bodyDef));
         } else {
             bodyDef['properties'].forEach(element => {
                 if (element['extensions'] && element['extensions']['x-ms-client-flatten']) {
@@ -660,8 +694,11 @@ export class ExampleProcessor
                     } else {
                         this._log("Couldn't find model: " + submodel);
                     }
-                } else {
-                    propertiesCount++;
+                } else {                    
+                    if (!element['isReadOnly']) {
+                        this._log("COUNTING PROPERTY: " + element['name']['raw'] + " --- " + element['isReadOnly']/* + " --- " + JSON.stringify(element)*/);
+                        propertiesCount++;
+                    }
                 }         
             });
         }

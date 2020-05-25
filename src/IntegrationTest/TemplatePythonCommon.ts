@@ -35,10 +35,10 @@ export function AppendExample(model: Model, prefix: string, ci: number, output: 
     output.push("");
 
     if (model.config[ci]['comment'] != null) {
-        output.push("# " + model.config[ci]['comment']);
+        output.push(prefix + "# " + model.config[ci]['comment']);
     }
 
-    output.push("# " + example.Id + "[" + example.Method + "]");
+    output.push(prefix + "# " + example.Id + "[" + example.Method + "]");
 
     if (hasBody)
     {
@@ -48,11 +48,11 @@ export function AppendExample(model: Model, prefix: string, ci: number, output: 
             {
                 if (line.startsWith("{"))
                 {
-                    output.push("BODY = " + line);
+                    output.push(prefix + "BODY = " + line);
                 }
                 else
                 {
-                    output.push(line);
+                    output.push(prefix + line);
                 }
             }
         } else {
@@ -65,11 +65,11 @@ export function AppendExample(model: Model, prefix: string, ci: number, output: 
                     {
                         if (line.startsWith("{"))
                         {
-                            output.push(ToSnakeCase(k).toUpperCase() +  " = " + line);
+                            output.push(prefix + ToSnakeCase(k).toUpperCase() +  " = " + line);
                         }
                         else
                         {
-                            output.push(line);
+                            output.push(prefix + line);
                         }
                     }        
                 }
@@ -87,7 +87,7 @@ export function AppendExample(model: Model, prefix: string, ci: number, output: 
                 if (clientParams != "") clientParams += ", ";
                 // XXX - support more complex bodies
                 if (typeof body[k] == "object") {
-                    clientParams += ToSnakeCase(k) + "= " + ToSnakeCase(k).toUpperCase();
+                    clientParams += ToSnakeCase(k) + "=" + ToSnakeCase(k).toUpperCase();
                 } else {
                     clientParams += ToSnakeCase(k) + "=\"" + body[k] + "\"";
                 }
@@ -97,6 +97,8 @@ export function AppendExample(model: Model, prefix: string, ci: number, output: 
             clientParams += ToSnakeCase(example.GetExampleBodyName()) + "=BODY";
         }
     }
+
+    clientParams = _ReplaceVariables(clientParams);
 
     // attach query parameters
     if (example.QueryParameters.length > 0) {
@@ -117,14 +119,14 @@ export function AppendExample(model: Model, prefix: string, ci: number, output: 
 
     let disabled = model.config[ci]['disabled'] ? "# " : "";
 
-    output.push(disabled + "result = self.mgmt_client." +
+    output.push(prefix + disabled + "result = self.mgmt_client." +
                 ((ToSnakeCase(example.OperationName) != "") ? (ToSnakeCase(example.OperationName) + ".") : "") +
                 ((example.LongRunning && model.track2) ? "begin_" : "") + 
                 ToSnakeCase(example.MethodName) +
                                      "(" + clientParams + ")");
     if (example.LongRunning)
     {
-        output.push(disabled + "result = result.result()");
+        output.push(prefix + disabled + "result = result.result()");
     }
 }
 
