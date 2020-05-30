@@ -50,6 +50,17 @@ export class ExampleProcessor
                 for (var k in examplesDictionary)
                 {
                     this._exampleId = "/" + operation['name']['raw'] + "/" + method['httpMethod'] + "/" + k;
+   
+                    // check if example is included in the test scenario
+                    let found: boolean = false;
+                    for (let tsidx = 0; tsidx < this._testScenario.length; tsidx++) {
+                        if (this._testScenario[tsidx]['name'] == this._exampleId && !this._testScenario[tsidx]['disabled']) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) continue;
+   
                     var body = examplesDictionary[k];
                     var url = this.NormalizeResourceId(method['url']);
                     var refs: string[] = [];

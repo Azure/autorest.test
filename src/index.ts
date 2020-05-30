@@ -1,5 +1,9 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license output.pushrmation.
+ *--------------------------------------------------------------------------------------------*/
+
 import { AutoRestExtension, Channel } from '@azure-tools/autorest-extension-base';
-import * as yaml from "node-yaml";
 
 // Generic
 import { ExampleProcessor } from "./Common/ExampleProcessor"; 
@@ -7,7 +11,6 @@ import { Example, ExampleWarning } from "./Common/Example";
 
 // Generators
 import { GenerateIntegrationTest, GenerateDefaultTestScenario } from "./IntegrationTest/Generator";
-import { WSAEHOSTDOWN } from 'constants';
 
 export type LogCallback = (message: string) => void;
 export type FileCallback = (path: string, rows: string[]) => void;
@@ -68,6 +71,7 @@ extension.Add("test", async autoRestApi => {
 
         // namespace is the only obligatory option
         // we will derive default "package-name" and "root-name" from it
+
         const cli = await autoRestApi.GetValue("cli");
         const python = await autoRestApi.GetValue("python");
         let namespace = python['namespace'] || cli['namespace'];

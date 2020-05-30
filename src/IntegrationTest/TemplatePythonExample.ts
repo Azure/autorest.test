@@ -31,66 +31,74 @@ export function GeneratePythonExample(model: Model) : string[] {
     output.push("");
 
     // XXX - proper namespace
-    output.push("import " + model.namespace);
+    output.push("import os")
+    output.push("from " + model.namespace + " import " + model.mgmtClientName);
+    output.push("from azure.mgmt.resource import ResourceManagementClient");
+    output.push("from azure.common.credentials import ServicePrincipalCredentials");
 
     let hasStorageAccountPreparer: boolean = (refs.indexOf(ReferenceType.STORAGE) >= 0);
     let needSubscriptionId: boolean = false;
-    let preparers = ", ResourceGroupPreparer";
-    if (hasStorageAccountPreparer)
-    {
-        preparers += ", StorageAccountPreparer";
-        needSubscriptionId = true;
-    }
 
     // add all the variables used in the example
     output.push("");
     output.push("AZURE_LOCATION = 'eastus'");
-    output.push("RESOURCE_GROUP = resource_group.name");
+    output.push("RESOURCE_GROUP = \"myResourceGroup\"");
     if (model.haveUnique()) {
         output.push("UNIQUE = resource_group.name[-4:]");
     }
-    output.push("SUBSCRIPTION_ID = self.settings.SUBSCRIPTION_ID");
-    output.push("TENANT_ID = self.settings.TENANT_ID");
+    //output.push("SUBSCRIPTION_ID = self.settings.SUBSCRIPTION_ID");
+    //output.push("TENANT_ID = self.settings.TENANT_ID");
+    
+    // XXX - this should be only for track1
+    output.push("# credentials from environment");
+    output.push("SUBSCRIPTION_ID = os.environ['AZURE_SUBSCRIPTION_ID']");
+    output.push("TENANT_ID = os.environ['AZURE_TENANT']");
+    output.push("CLIENT_ID = os.environ['AZURE_CLIENT_ID']");
+    output.push("CLIENT_SECRET = os.environ['AZURE_SECRET']");
+    
     AddVariables(model, "", output);
 
-    // XXX - create clients
-    output.push("        self.mgmt_client = self.create_mgmt_client(");
-    output.push("            " + model.namespace + "." + model.mgmtClientName);
+    // XXX - only track1
+    output.push("# management client");
+    output.push("credentials = ServicePrincipalCredentials(");
+    output.push("    client_id=CLIENT_ID,");
+    output.push("    secret=CLIENT_SECRET,");
+    output.push("    tenant=TENANT_ID");
+    output.push(")");
+    
+    output.push("mgmt_client = " + model.mgmtClientName + "(credentials, SUBSCRIPTION_ID)");
+
+    output.push("resource_client = ResourceManagementClient(credentials, SUBSCRIPTION_ID)");
 
     if (model.needCompute() ||
         model.needKeyvault() ||
         model.needNetwork() ||
         model.needStorage()) {
 
-        output.push("");
-        output.push("        if self.is_live:");
-
         if (model.needCompute()) {
-            output.push("            from azure.mgmt.compute import ComputeManagementClient");
-            output.push("            self.compute_client = self.create_mgmt_client(");
-            output.push("                ComputeManagementClient");
-            output.push("            )");
+            output.push("from azure.mgmt.compute import ComputeManagementClient");
+            output.push("compute_client = ComputeManagementClient(credentials, SUBSCRIPTION_ID)");
         }
         if (model.needNetwork()) {
-            output.push("            from azure.mgmt.network import NetworkManagementClient");
-            output.push("            self.network_client = self.create_mgmt_client(");
-            output.push("                NetworkManagementClient");
-            output.push("            )");
+            output.push("from azure.mgmt.network import NetworkManagementClient");
+            output.push("network_client = NetworkManagementClient(credentials, SUBSCRIPTION_ID)");
         }
         if (model.needStorage()) {
-            output.push("            from azure.mgmt.storage import StorageManagementClient");
-            output.push("            self.storage_client = self.create_mgmt_client(");
-            output.push("                StorageManagementClient");
-            output.push("            )");
+            output.push("from azure.mgmt.storage import StorageManagementClient");
+            output.push("storage_client = StorageManagementClient(credentials, SUBSCRIPTION_ID)");
         }
         if (model.needKeyvault()) {
-            output.push("            from azure.mgmt.storage import KeyvaultManagementClient");
-            output.push("            self.keyvault_client = self.create_mgmt_client(");
-            output.push("                KeyvaultManagementClient");
-            output.push("            )");
+            output.push("from azure.mgmt.keyvault import KeyvaultManagementClient");
+            output.push("keyvault_client = KeyvaultManagementClient(credentials, SUBSCRIPTION_ID)");
         }
     }
 
+    output.push("# CREATE RESOURCE GROUP");
+
+    output.push("print(\"Creating Resource Group\")");
+    output.push("resource_client.resource_groups.create_or_update(resource_group_name=RESOURCE_GROUP, parameters={ 'location': AZURE_LOCATION })");
+    
+    
     if (model.needVirtualNetwork()) {
         output.push("        def create_virtual_network(self, group_name, location, network_name, subnet_name):");
         output.push("");
@@ -229,27 +237,11 @@ export function GeneratePythonExample(model: Model) : string[] {
         output.push("        return result.keys[0].value");
     }
 
-    output.push("    @ResourceGroupPreparer(location=AZURE_LOCATION)");
-
-    let preparersParamList: string = ", resource_group";
-    if (hasStorageAccountPreparer)
-    {
-        output.push("    @StorageAccountPreparer(location=AZURE_LOCATION, name_prefix='gentest')");
-        preparersParamList += ", storage_account";
-    }
-
-    //output.push("    def " + testName + "(self" + preparersParamList + "):");
-    //output.push("        account_name = self.get_resource_name('pyarmcdn')");
     output.push("");
-
-    if (hasStorageAccountPreparer)
-    {
-        output.push("        STORAGE_ACCOUNT_NAME = storage_account.name");
-    }
     
     for (var ci = 0; ci < model.config.length; ci++)
     {
-        AppendExample(model, "", ci, output);
+        AppendExample(model, "", ci, output, false);
     }
 
     return output;

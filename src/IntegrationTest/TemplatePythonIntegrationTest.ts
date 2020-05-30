@@ -278,7 +278,7 @@ export function GeneratePythonIntegrationTest(model: Model) : string[] {
     
     for (var ci = 0; ci < model.config.length; ci++)
     {
-        AppendExample(model, "        ", ci, output);
+        AppendExample(model, "        ", ci, output, true);
     }
 
     output.push("");

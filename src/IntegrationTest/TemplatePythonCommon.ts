@@ -17,7 +17,7 @@ export function AddVariables(model: Model, prefix: string, output: string[]) {
     });
 }
 
-export function AppendExample(model: Model, prefix: string, ci: number, output: string[]) {
+export function AppendExample(model: Model, prefix: string, ci: number, output: string[], isTest: boolean) {
     var example: Example = null;
     for (var i = 0; i < model.examples.length; i++)
     {
@@ -40,6 +40,9 @@ export function AppendExample(model: Model, prefix: string, ci: number, output: 
 
     output.push(prefix + "# " + example.Id + "[" + example.Method + "]");
 
+    if (!isTest) {
+        output.push(prefix + "print(\"" + example.Id.split("/").pop() + "\")");
+    }
     if (hasBody)
     {
         if (!example.FlattenBody) {
@@ -119,7 +122,7 @@ export function AppendExample(model: Model, prefix: string, ci: number, output: 
 
     let disabled = model.config[ci]['disabled'] ? "# " : "";
 
-    output.push(prefix + disabled + "result = self.mgmt_client." +
+    output.push(prefix + disabled + "result = " + (isTest ? "self." : "") + "mgmt_client." +
                 ((ToSnakeCase(example.OperationName) != "") ? (ToSnakeCase(example.OperationName) + ".") : "") +
                 ((example.LongRunning && model.track2) ? "begin_" : "") + 
                 ToSnakeCase(example.MethodName) +
