@@ -32,13 +32,14 @@ export function AppendExample(model: Model, prefix: string, ci: number, output: 
 
     let hasBody: boolean = (example.GetExampleBodyName() != null);
 
-    output.push("");
+    output.push("#--------------------------------------------------------------------------");
 
     if (model.config[ci]['comment'] != null) {
         output.push(prefix + "# " + model.config[ci]['comment']);
     }
 
     output.push(prefix + "# " + example.Id + "[" + example.Method + "]");
+    output.push("#--------------------------------------------------------------------------");
 
     if (!isTest) {
         output.push(prefix + "print(\"" + example.Id.split("/").pop() + "\")");

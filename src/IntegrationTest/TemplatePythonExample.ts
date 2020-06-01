@@ -33,33 +33,52 @@ export function GeneratePythonExample(model: Model) : string[] {
     // XXX - proper namespace
     output.push("import os")
     output.push("from " + model.namespace + " import " + model.mgmtClientName);
-    output.push("from azure.mgmt.resource import ResourceManagementClient");
+
+    if (model.needResourceGroup()) {
+        output.push("from azure.mgmt.resource import ResourceManagementClient");
+    }
+
     output.push("from azure.common.credentials import ServicePrincipalCredentials");
 
     let hasStorageAccountPreparer: boolean = (refs.indexOf(ReferenceType.STORAGE) >= 0);
     let needSubscriptionId: boolean = false;
 
-    // add all the variables used in the example
     output.push("");
-    output.push("AZURE_LOCATION = 'eastus'");
-    output.push("RESOURCE_GROUP = \"myResourceGroup\"");
-    if (model.haveUnique()) {
-        output.push("UNIQUE = resource_group.name[-4:]");
-    }
-    //output.push("SUBSCRIPTION_ID = self.settings.SUBSCRIPTION_ID");
-    //output.push("TENANT_ID = self.settings.TENANT_ID");
+    output.push("");
     
-    // XXX - this should be only for track1
+    output.push("#--------------------------------------------------------------------------");
     output.push("# credentials from environment");
+    output.push("#--------------------------------------------------------------------------");
     output.push("SUBSCRIPTION_ID = os.environ['AZURE_SUBSCRIPTION_ID']");
     output.push("TENANT_ID = os.environ['AZURE_TENANT']");
     output.push("CLIENT_ID = os.environ['AZURE_CLIENT_ID']");
     output.push("CLIENT_SECRET = os.environ['AZURE_SECRET']");
+    output.push("");
+    output.push("");
     
+    output.push("#--------------------------------------------------------------------------");
+    output.push("# variables");
+    output.push("#--------------------------------------------------------------------------");
+
+
+    // add all the variables used in the example
+    output.push("AZURE_LOCATION = 'eastus'");
+
+    if (model.needResourceGroup()) {
+        output.push("RESOURCE_GROUP = \"myResourceGroup\"");
+    }
+
+    if (model.haveUnique()) {
+        output.push("UNIQUE = resource_group.name[-4:]");
+    }
     AddVariables(model, "", output);
+    output.push("");
+    output.push("");
 
     // XXX - only track1
-    output.push("# management client");
+    output.push("#--------------------------------------------------------------------------");
+    output.push("# management clients");
+    output.push("#--------------------------------------------------------------------------");
     output.push("credentials = ServicePrincipalCredentials(");
     output.push("    client_id=CLIENT_ID,");
     output.push("    secret=CLIENT_SECRET,");
@@ -68,7 +87,9 @@ export function GeneratePythonExample(model: Model) : string[] {
     
     output.push("mgmt_client = " + model.mgmtClientName + "(credentials, SUBSCRIPTION_ID)");
 
-    output.push("resource_client = ResourceManagementClient(credentials, SUBSCRIPTION_ID)");
+    if (model.needResourceGroup()) {
+        output.push("resource_client = ResourceManagementClient(credentials, SUBSCRIPTION_ID)");
+    }
 
     if (model.needCompute() ||
         model.needKeyvault() ||
@@ -92,12 +113,18 @@ export function GeneratePythonExample(model: Model) : string[] {
             output.push("keyvault_client = KeyvaultManagementClient(credentials, SUBSCRIPTION_ID)");
         }
     }
+    output.push("");
+    output.push("");
 
-    output.push("# CREATE RESOURCE GROUP");
-
-    output.push("print(\"Creating Resource Group\")");
-    output.push("resource_client.resource_groups.create_or_update(resource_group_name=RESOURCE_GROUP, parameters={ 'location': AZURE_LOCATION })");
-    
+    if (model.needResourceGroup()) {
+        output.push("#--------------------------------------------------------------------------");
+        output.push("# resource group (prerequisite)");
+        output.push("#--------------------------------------------------------------------------");
+        output.push("print(\"Creating Resource Group\")");
+        output.push("resource_client.resource_groups.create_or_update(resource_group_name=RESOURCE_GROUP, parameters={ 'location': AZURE_LOCATION })");
+        output.push("");
+        output.push("");
+        }
     
     if (model.needVirtualNetwork()) {
         output.push("        def create_virtual_network(self, group_name, location, network_name, subnet_name):");

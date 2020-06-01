@@ -86,6 +86,10 @@ export class Model
         return this.HaveVarMatching("^availability_set_.*$");
     }
 
+    public needResourceGroup() : boolean {
+        return this.HaveVarMatching("^resource_group_.*$");
+    }
+
     public getVars(): any[] {
         if (this._vars == null) {
             this.AggregateVars();
