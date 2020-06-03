@@ -42,11 +42,19 @@ export class Model
     public examplesTested: number;
 
     public needCompute() : boolean {
+        if (this.namespace == "azure.mgmt.compute") {
+            return false;
+        }
+
         return (this.needVirtualMachine() ||
                 this.needAvailabilitySet());
     }
 
     public needNetwork() : boolean {
+        if (this.namespace == "azure.mgmt.network") {
+            return false;
+        }
+
         return (this.needVirtualNetwork() ||
                 this.needSubnet() ||
                 this.needNetworkInterface() ||
@@ -54,6 +62,10 @@ export class Model
     }
 
     public needStorage() : boolean {
+        if (this.namespace == "azure.mgmt.storage") {
+            return false;
+        }
+
         return this.HaveVarMatching("^storage_account_.*$");
     }
 
@@ -87,7 +99,7 @@ export class Model
     }
 
     public needResourceGroup() : boolean {
-        return this.HaveVarMatching("^resource_group_.*$");
+        return this.HaveVarMatching("^resource_group.*$");
     }
 
     public getVars(): any[] {

@@ -11,7 +11,7 @@ export function AddVariables(model: Model, prefix: string, output: string[]) {
     // get variables from all examples
     let vars: ExampleVariable[] = model.getVars();
     vars.forEach(v => {
-        if (v.name != "resource_group" && v.name != "azure_location") {
+        if (/*v.name != "resource_group" && */v.name != "azure_location") {
             output.push(prefix + v.name.toUpperCase() + " = \"" + v.value + "\"" + (v.unique ? " + UNIQUE" : ""));
         }
     });

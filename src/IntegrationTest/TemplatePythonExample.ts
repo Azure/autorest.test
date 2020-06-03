@@ -30,7 +30,6 @@ export function GeneratePythonExample(model: Model) : string[] {
     output.push("#--------------------------------------------------------------------------");
     output.push("");
 
-    // XXX - proper namespace
     output.push("import os")
     output.push("from " + model.namespace + " import " + model.mgmtClientName);
 
@@ -64,9 +63,9 @@ export function GeneratePythonExample(model: Model) : string[] {
     // add all the variables used in the example
     output.push("AZURE_LOCATION = 'eastus'");
 
-    if (model.needResourceGroup()) {
-        output.push("RESOURCE_GROUP = \"myResourceGroup\"");
-    }
+    //if (model.needResourceGroup()) {
+    //    output.push("RESOURCE_GROUP = \"myResourceGroup\"");
+    //}
 
     if (model.haveUnique()) {
         output.push("UNIQUE = resource_group.name[-4:]");
@@ -113,20 +112,20 @@ export function GeneratePythonExample(model: Model) : string[] {
             output.push("keyvault_client = KeyvaultManagementClient(credentials, SUBSCRIPTION_ID)");
         }
     }
-    output.push("");
-    output.push("");
 
     if (model.needResourceGroup()) {
+        output.push("");
+        output.push("");
         output.push("#--------------------------------------------------------------------------");
         output.push("# resource group (prerequisite)");
         output.push("#--------------------------------------------------------------------------");
         output.push("print(\"Creating Resource Group\")");
         output.push("resource_client.resource_groups.create_or_update(resource_group_name=RESOURCE_GROUP, parameters={ 'location': AZURE_LOCATION })");
-        output.push("");
-        output.push("");
         }
     
     if (model.needVirtualNetwork()) {
+        output.push("");
+        output.push("");
         output.push("        def create_virtual_network(self, group_name, location, network_name, subnet_name):");
         output.push("");
         output.push("        azure_operation_poller = self.network_client.virtual_networks.create_or_update(");
@@ -153,6 +152,8 @@ export function GeneratePythonExample(model: Model) : string[] {
     }
 
     if (model.needNetworkInterface()) {
+        output.push("");
+        output.push("");
         output.push("        def create_network_interface(self, group_name, location, nic_name, subnet_id):");
         output.push("        async_nic_creation = self.network_client.network_interfaces.create_or_update(");
         output.push("            group_name,");
@@ -172,6 +173,8 @@ export function GeneratePythonExample(model: Model) : string[] {
     }
 
     if (model.needVirtualMachine()) {
+        output.push("");
+        output.push("");
         output.push("        def create_vm(self, group_name, location, vm_name, nic_id):");
         output.push("        # Create a vm with empty data disks.[put]");
         output.push("        BODY = {");
@@ -229,6 +232,8 @@ export function GeneratePythonExample(model: Model) : string[] {
     }
 
     if (model.needStorage()) {
+        output.push("");
+        output.push("");
         output.push("        def create_storage_account(self, group_name, location, storage_name):");
         output.push("        BODY = {");
         output.push("          \"sku\": {");
@@ -264,12 +269,14 @@ export function GeneratePythonExample(model: Model) : string[] {
         output.push("        return result.keys[0].value");
     }
 
-    output.push("");
-    
     for (var ci = 0; ci < model.config.length; ci++)
     {
+        output.push("");
+        output.push("");
         AppendExample(model, "", ci, output, false);
     }
+
+    output.push("");
 
     return output;
 }
