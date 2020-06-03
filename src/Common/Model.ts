@@ -7,7 +7,7 @@ import { Example, ExampleVariable } from "./Example"
 
 export class Model
 {
-    public constructor (examples: Example[],
+    public constructor(examples: Example[],
         config: any,
         namespace: string,
         cliCommandName: string,
@@ -79,7 +79,8 @@ export class Model
     }
 
     public needVirtualNetwork() : boolean {
-        return this.HaveVarMatching("^virtual_network_.*$");
+        return (this.HaveVarMatching("^virtual_network_.*$") ||
+                this.needNetworkInterface());
     }
 
     public needLoadBalancer() : boolean {
@@ -87,7 +88,8 @@ export class Model
     }
 
     public needSubnet() : boolean {
-        return this.HaveVarMatching("^subnet_.*$");
+        return (this.HaveVarMatching("^subnet_.*$") ||
+                this.needNetworkInterface());
     }
 
     public needVirtualMachine() : boolean {
@@ -125,18 +127,14 @@ export class Model
 
     private AggregateVars() {
         // get variables from all examples
-        let vars: ExampleVariable[] = [];
+        this._vars = [];
         this._haveUnique = false;
         this.examples.forEach(e => {
             e.Variables.forEach(v => {
-                let found: ExampleVariable = null;
-                vars.forEach(tv => {
-                    if (tv.name == v.name) {
-                        found = tv;
-                    }
-                });
+
+                let found: ExampleVariable = this.findVar(v.name);
                 if (found == null) {
-                    vars.push(v);
+                    this._vars.push(v);
                     if (v.unique) this._haveUnique = true;
                 } else {
                     // make sure unique is propagated -- shouldn't be here
@@ -147,7 +145,26 @@ export class Model
                 }
             });
         });
-        this._vars = vars;
+
+        if (this.needVirtualMachine() && !this.findVar("virtual_machine_name")) {
+            this._vars.push(new ExampleVariable("virtual_machine_name", "myVirtualMachine", "virtualMachineName"));
+        }
+        if (this.needVirtualNetwork() && !this.findVar("virtual_network_name")) {
+            this._vars.push(new ExampleVariable("virtual_network_name", "myVirtualNetwork", "virtualNetworkName"));
+        }
+        if (this.needSubnet() && !this.findVar("subnet_name")) {
+            this._vars.push(new ExampleVariable("subnet_name", "mySubnet", "subnetName"));
+        }
+    }
+
+    private findVar(name: string): ExampleVariable {
+        let found: ExampleVariable = null;
+        this._vars.forEach(tv => {
+            if (tv.name == name) {
+                found = tv;
+            }
+        });
+        return found;
     }
 
     private _haveUnique: boolean = false;

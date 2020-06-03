@@ -588,7 +588,7 @@ export class ExampleProcessor
                             this._warnings.push(new ExampleWarning(this._exampleId, "non-standard resource name '" + splitted[idx] + "', should be '" + defaultName + "'"));
                         }
 
-                        if (splitted[idx].charAt(0) == '{' && splitted[idx].charAt(1) != '{') {
+                        if (splitted[idx].charAt(0) == '{' && splitted[idx].charAt(1) != '{' && splitted[idx].indexOf('-') == -1) {
                             let name = ToSnakeCase(splitted[idx].substr(1, splitted[idx].length - 2));
                             if (name == "location") name = "azure_location"
                             newId += "/{{ " + name + " }}";
