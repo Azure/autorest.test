@@ -6,6 +6,7 @@
 import { Example, ExampleVariable, ReferenceType, ExampleWarning } from "./Example"
 import { ToSnakeCase, ToCamelCase } from "../Common/Helpers"
 import { LogCallback } from "../index"
+import { stringify } from "querystring";
 
 export class ExampleProcessor
 {
@@ -43,6 +44,15 @@ export class ExampleProcessor
                 parameters.forEach(p => {
                     if (p["location"] == "body") {
                         bodyDef = this.FindModelType(p["modelType"]["$ref"]);
+
+                        if (bodyDef == null) {
+                            this._log("-------------------------------------- BODY NOT FOUND");
+                            //this._log(" " + JSON.stringify(p) );
+                            //this._log(" " + p["modelType"]["$ref"]);
+                            this._log("----------------------------------------------------");
+    
+                        }
+
                     }
                 });
 
@@ -93,7 +103,7 @@ export class ExampleProcessor
                     }
 
                     if (exampleBody != null) {
-                        this.ProcessExample(exampleBody, bodyDef);
+                        this.ProcessExample(exampleBody, bodyDef, "");
 
                         if (bodyDef) {
                             let propertiesCount = this.CountProperties(bodyDef);
@@ -198,14 +208,18 @@ export class ExampleProcessor
     }
 
 
-    private ProcessExample(body: any, bodyDef: any)
+    private ProcessExample(body: any, bodyDef: any, path: string)
     {
         if (body instanceof Array)
         {
-            // va.Count
+            //this._log("---------------------------------------------- ARRAY");
+            //this._log(" " + path + "/" + "*" );
+            //this._log(" " + JSON.stringify(bodyDef) );
+            //this._log("----------------------------------------------------");
+            
             for (var i = 0; i < body.length; i++)
             {
-                this.ProcessExample(body[i], null);
+                this.ProcessExample(body[i], bodyDef, path + "/*");
             }
         }
         else if (typeof body == 'object')
@@ -230,6 +244,7 @@ export class ExampleProcessor
                 }
                 else
                 {
+                    let subModel: any = null;
                     if (bodyDef != null) {
                         // find definition
                         if (bodyDef["properties"]) {
@@ -238,12 +253,51 @@ export class ExampleProcessor
                                     if (p['extensions'] && p['extensions']['x-ms-client-flatten']) {
                                         flatten = true;
                                     }
+
+                                    let primary: boolean = false;
+
+                                    if (p['modelType']) {
+                                        if (p['modelType']['$type'] == 'SequenceType') {
+                                            if (p["modelType"]["elementType"]["$type"] == "PrimaryType" || p['modelType']['$type'] == 'DictionaryType' || p['modelType']['$type'] == 'EnumType') {
+                                                primary = true;
+                                            } else {
+                                                if (p["modelType"]["elementType"]["$ref"] != undefined) {
+                                                    subModel = this.FindModelType(p["modelType"]["elementType"]["$ref"]);
+                                                } else if (p["modelType"]["elementType"]["$id"] != undefined) {
+                                                    subModel = p["modelType"]["elementType"];
+                                                }
+                                            }
+                                        } else if (p['modelType']['$type'] == 'PrimaryType' || p['modelType']['$type'] == 'DictionaryType' || p['modelType']['$type'] == 'EnumType') {
+                                            primary = true;
+                                        } else {
+                                            if (p["modelType"]["$ref"] != undefined) {
+                                                subModel = this.FindModelType(p["modelType"]["$ref"]);
+                                            } else if (p["modelType"]["$id"] != undefined) {
+                                                subModel = p["modelType"];
+                                            }
+                                        }
+                                    }
+                                    
+                                    if (subModel == null && !primary) {
+                                        this._log("-------------------------------------- SUBMODEL NOT FOUND");
+                                        this._log(" " + path + "/" + pp );
+                                        this._log(" " + JSON.stringify(p) );
+                                        this._log("---------------------------------------------------------");
+                                    }
+
                                 }
                             });
                         }
                     }
 
-                    this.ProcessExample(subv, null);
+                    this.ProcessExample(subv, subModel, path + "/" + pp);
+                    if (pp == "properties" && !flatten) {
+                        this._log("-------------------------------------- NOT FLATTENED");
+                        this._log(" " + path + "/" + pp );
+                        this._log(" " + JSON.stringify(subModel) );
+                        this._log(" " + JSON.stringify(bodyDef) );
+                        this._log("----------------------------------------------------");
+                    }
                 }
 
                 // check if this property must be flattened
@@ -643,15 +697,20 @@ export class ExampleProcessor
 
     private FindModelType(ref: string): any
     {
-        let types: any[] = this._swagger["modelTypes"];
-        let found = null;
-        types.forEach(m => {
-            if (m["$id"] == ref) {
-                found = m;
-            }
-        });
+        //let types: any[] = this._swagger["modelTypes"];
+        //let found = null;
+        //types.forEach(m => {
+        //    if (m["$id"] == ref) {
+        //        found = m;
+        //    }
+        //});
+        //return found;
 
-        return found;
+        if (ref == undefined)
+            return null;
+
+
+        return this.FindModel(this._swagger["modelTypes"], ref);
     }
 
     private FindModel(o: any, id: string): any {
@@ -693,12 +752,18 @@ export class ExampleProcessor
         }
 
         if (bodyDef['properties'] == undefined) {
-            this._log("Counldn't find properties in model: " + JSON.stringify(bodyDef));
-            this._log(JSON.stringify(bodyDef));
+            this._log("Counldn't find properties in model: " /*+ JSON.stringify(bodyDef)*/);
+            //this._log(JSON.stringify(bodyDef));
         } else {
             bodyDef['properties'].forEach(element => {
                 if (element['extensions'] && element['extensions']['x-ms-client-flatten']) {
-                    let submodel = this.FindModelType(element['modelType']['$ref']);
+                    let submodel = null;
+                    
+                    if (element['modelType']['$ref'] != undefined) {
+                        submodel = this.FindModelType(element['modelType']['$ref']);
+                    } else if (element['modelType']['$id'] != undefined){
+                       submodel = element['modelType'];
+                    }
 
                     if (submodel != null) {
                         propertiesCount += (this.CountProperties(submodel));

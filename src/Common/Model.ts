@@ -74,20 +74,32 @@ export class Model
     }
 
     public needNetworkInterface() : boolean {
+        if (this.namespace == "azure.mgmt.network") {
+            return false;
+        }
         return (this.HaveVarMatching("^network_interface_.*$") ||
                 this.needVirtualMachine());
     }
 
     public needVirtualNetwork() : boolean {
+        if (this.namespace == "azure.mgmt.network") {
+            return false;
+        }
         return (this.HaveVarMatching("^virtual_network_.*$") ||
                 this.needNetworkInterface());
     }
 
     public needLoadBalancer() : boolean {
+        if (this.namespace == "azure.mgmt.network") {
+            return false;
+        }
         return this.HaveVarMatching("^load_balancer_.*$");
     }
 
     public needSubnet() : boolean {
+        if (this.namespace == "azure.mgmt.network") {
+            return false;
+        }
         return (this.HaveVarMatching("^subnet_.*$") ||
                 this.needNetworkInterface());
     }
