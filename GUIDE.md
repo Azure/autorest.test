@@ -1,3 +1,16 @@
+# Test and Example Generation Tool
+
+Autorest.test was designed as a tool to generate integration tests for Azure SDK and also fully tested E2E samples. Currently following outputs can be generated:
+
+- Azure SDK for Python integration test
+- Azure SDK samples based on integration test
+
+## How It Works?
+
+Integration test and examples are generated from Azure REST API specification:
+
+https://github.com/Azure/azure-rest-api-specs
+
 ## How to Generate Python Test
 
     autorest --version=2.0.4407 --test --use=@autorest/test@latest --python-integration-test /_/azure-rest-api-specs/specification/storageimportexport/resource-manager/readme.md --output-folder=/_/azure-sdk-for-python
@@ -74,3 +87,12 @@ Last piece of information printed out is test coverage information (this informa
 From **azure-sdk-for-python** folder run following command:
 
     python tools/azure-sdk-tools/devtools_testutils/mgmt_test_stats.py > doc/dev/mgmt/coverage.md 
+    
+## Option Reference
+
+--python-integration-test
+
+--python-example
+
+--track2
+
