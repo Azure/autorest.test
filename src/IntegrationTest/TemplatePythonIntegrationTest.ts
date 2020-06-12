@@ -53,7 +53,7 @@ export function GeneratePythonIntegrationTest(model: Model) : string[] {
 
     let hasStorageAccountPreparer: boolean = (refs.indexOf(ReferenceType.STORAGE) >= 0);
     let needSubscriptionId: boolean = false;
-    let preparers = ", ResourceGroupPreparer";
+    let preparers = ", RandomNameResourceGroupPreparer";
     if (hasStorageAccountPreparer)
     {
         preparers += ", StorageAccountPreparer";
@@ -246,7 +246,7 @@ export function GeneratePythonIntegrationTest(model: Model) : string[] {
         output.push("        return result.keys[0].value");
     }
 
-    output.push("    @ResourceGroupPreparer(location=AZURE_LOCATION)");
+    output.push("    @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)");
 
     let preparersParamList: string = ", resource_group";
     if (hasStorageAccountPreparer)
