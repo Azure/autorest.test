@@ -11,6 +11,10 @@ export function ToSnakeCase(v: string)
 
     // handle some exceptions that are not translated correctly
     snake = snake.replace("ipaddress", "ip_address");
+    snake = snake.replace("ipconfiguration", "ip_configuration");
+    snake = snake.replace("wanname", "wan_name");
+    snake = snake.replace("wanparameters", "wan_parameters");
+    snake = snake.replace("v2parameters", "v2_parameters");
     
     return snake;
 }

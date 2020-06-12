@@ -393,7 +393,7 @@ export class ExampleProcessor
 
         if (method == "put" || method == "patch")
         {
-            this.ScanExampleBodyForReferencesAndVariables(example["parameters"], refs, vars);
+            this.ScanExampleBodyForReferencesAndVariables(example["parameters"], refs, vars, "");
             var longFilename: string = filename;
     
             // add superresource reference
@@ -429,13 +429,13 @@ export class ExampleProcessor
         return refs;
     }
 
-    private ScanExampleBodyForReferencesAndVariables(v: any, refs: string[], vars: ExampleVariable[])
+    private ScanExampleBodyForReferencesAndVariables(v: any, refs: string[], vars: ExampleVariable[], path: string)
     {
         if (v instanceof Array)
         {
             for (var i = 0; i < v.length; i++)
             {
-                this.ScanExampleBodyForReferencesAndVariables(v[i], refs, vars);
+                this.ScanExampleBodyForReferencesAndVariables(v[i], refs, vars, path + "/*");
             }
         }
         else if (typeof v == 'object')
@@ -504,13 +504,45 @@ export class ExampleProcessor
                     } else if (pp == "location") {
                         v[pp] = "{{azure_location}}";
                     }
+                    else if (path + "/" + pp == "/parameters/probes/*/name") {
+                        v[pp] = "{{probe_name}}";
+                        this.PushVar(vars, "probe_name", "myProbe");
+                    }
+                    else if (path + "/" + pp == "/parameters/frontendIPConfigurations/*/name") {
+                        v[pp] = "{{frontend_ip_configuration_name}}";
+                        this.PushVar(vars, "frontend_ip_configuration_name", "myFrontendIpConfiguration");
+                    }
+                    else if (path + "/" + pp == "/parameters/backendAddressPools/*/name") {
+                        v[pp] = "{{backend_address_pool_name}}";
+                        this.PushVar(vars, "backend_address_pool_name", "myBackendAddressPoolName");
+                    }
+                    else if (path + "/" + pp == "/parameters/inboundNatRules/*/name") {
+                        v[pp] = "{{inbound_nat_rule_name}}";
+                        this.PushVar(vars, "inbound_nat_rule_name", "myInboundNatRuleName");
+                    }
 
                 }
                 else
                 {
-                    this.ScanExampleBodyForReferencesAndVariables(subv, refs, vars);
+                    this.ScanExampleBodyForReferencesAndVariables(subv, refs, vars, path + "/" + pp);
                 }
             }
+        }
+    }
+
+    private PushVar(vars: ExampleVariable[], name: string, value: string) {
+        let found = false;
+        for (let vv of vars)
+        {
+            if (vv.name == name)
+            {
+                found = true;
+            }
+        }
+
+        if (!found) {
+            let vv = new ExampleVariable(name, value, ToCamelCase(name));
+            vars.push(vv);
         }
     }
 
