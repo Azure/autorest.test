@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Example, ExampleVariable, ReferenceType, ExampleWarning } from "./Example"
-import { ToSnakeCase, ToCamelCase } from "../Common/Helpers"
+import { ToSnakeCase, ToCamelCase, IsSpecialName } from "../Common/Helpers"
 import { LogCallback } from "../index"
 import { stringify } from "querystring";
 
@@ -65,7 +65,7 @@ export class ExampleProcessor
                     let found: boolean = false;
                     if (this._testScenario) {
                         for (let tsidx = 0; tsidx < this._testScenario.length; tsidx++) {
-                            if (this._testScenario[tsidx]['name'] == this._exampleId && !this._testScenario[tsidx]['disabled']) {
+                            if (this._testScenario[tsidx]['name'] == this._exampleId /*&& !this._testScenario[tsidx]['disabled']*/) {
                                 found = true;
                                 break;
                             }
@@ -73,7 +73,7 @@ export class ExampleProcessor
                         if (!found) continue;
                     }
                        
-                    var body = examplesDictionary[k];
+                    var example = examplesDictionary[k];
                     var url = this.NormalizeResourceId(method['url']);
                     var refs: string[] = [];
                     var vars: ExampleVariable[] = [];
@@ -88,7 +88,7 @@ export class ExampleProcessor
                     let queryParameters: string[] = [];
                     parameters.forEach(p => {
                         if(p["location"] == "query") {
-                            if (body["parameters"][p["name"]["raw"]]) {
+                            if (example["parameters"][p["name"]["raw"]]) {
                                 queryParameters.push(p["name"]["raw"]);
                             }   
                         }
@@ -96,9 +96,9 @@ export class ExampleProcessor
     
                     let flattenBody = false;
                     let exampleBody = null;
-                    for (let k in body["parameters"]) {
-                        if (typeof body["parameters"][k] == "object") {
-                            exampleBody = body["parameters"][k];
+                    for (let k in example["parameters"]) {
+                        if (typeof example["parameters"][k] == "object") {
+                            exampleBody = example["parameters"][k];
                         }
                     }
 
@@ -112,9 +112,9 @@ export class ExampleProcessor
                             }
                         }
                     }
-                    this.ScanExampleForRefsAndVars(method['httpMethod'], url, method['url'], filename, body, haveCheckNameAvailability, refs, vars);
+                    this.ScanExampleForRefsAndVars(method['httpMethod'], url, method['url'], filename, example, haveCheckNameAvailability, refs, vars);
 
-                    var example = new Example(body,
+                    this._examples.push(new Example(example,
                                               url,
                                               method['httpMethod'],
                                               this._exampleId,
@@ -129,8 +129,7 @@ export class ExampleProcessor
                                               longRunning,
                                               this._warnings,
                                               flattenBody,
-                                              queryParameters);
-                    this._examples.push(example);
+                                              queryParameters));
                 }
             }
         }
@@ -387,7 +386,7 @@ export class ExampleProcessor
 
     private ScanExampleForRefsAndVars(method: string, url: string, unprocessedUrl: string, filename: string, example: any, haveCheckNameAvailability: boolean, refs: string[], vars: ExampleVariable[])
     {
-        this.ExtractVarsFromUrl(url, unprocessedUrl, (method == "put") ? haveCheckNameAvailability : false, vars);
+        this.ExtractVarsFromUrl(url, unprocessedUrl, example['parameters'], (method == "put") ? haveCheckNameAvailability : false, vars);
 
         var parts: string[] = url.split("/");
 
@@ -454,7 +453,7 @@ export class ExampleProcessor
                             {
                                 refs.push(this.GetFilenameFromUrl(subv, "put", false));
                                 
-                                this.ExtractVarsFromUrl(subv, null, false, vars);
+                                this.ExtractVarsFromUrl(subv, null, null, false, vars);
 
                                 // [ZIM] this is initial, very simple reference implementation
                                 if (subv.indexOf("/storageAccounts/") >=0)
@@ -506,21 +505,20 @@ export class ExampleProcessor
                     }
                     else if (path + "/" + pp == "/parameters/probes/*/name") {
                         v[pp] = "{{probe_name}}";
-                        this.PushVar(vars, "probe_name", "myProbe");
+                        this.PushVar(vars, "probe_name", "myProbe", null, false);
                     }
                     else if (path + "/" + pp == "/parameters/frontendIPConfigurations/*/name") {
                         v[pp] = "{{frontend_ip_configuration_name}}";
-                        this.PushVar(vars, "frontend_ip_configuration_name", "myFrontendIpConfiguration");
+                        this.PushVar(vars, "frontend_ip_configuration_name", "myFrontendIpConfiguration", null, false);
                     }
                     else if (path + "/" + pp == "/parameters/backendAddressPools/*/name") {
                         v[pp] = "{{backend_address_pool_name}}";
-                        this.PushVar(vars, "backend_address_pool_name", "myBackendAddressPoolName");
+                        this.PushVar(vars, "backend_address_pool_name", "myBackendAddressPoolName", null, false);
                     }
                     else if (path + "/" + pp == "/parameters/inboundNatRules/*/name") {
                         v[pp] = "{{inbound_nat_rule_name}}";
-                        this.PushVar(vars, "inbound_nat_rule_name", "myInboundNatRuleName");
+                        this.PushVar(vars, "inbound_nat_rule_name", "myInboundNatRuleName", null, false);
                     }
-
                 }
                 else
                 {
@@ -530,23 +528,22 @@ export class ExampleProcessor
         }
     }
 
-    private PushVar(vars: ExampleVariable[], name: string, value: string) {
+    private PushVar(vars: ExampleVariable[], name: string, value: string, swaggerName: string, forceUpdate: boolean) {
         let found = false;
         for (let vv of vars)
         {
-            if (vv.name == name)
-            {
-                found = true;
+            if (vv.name == name) {
+                if (forceUpdate) vv.value = value;
+                return vv;
             }
         }
 
-        if (!found) {
-            let vv = new ExampleVariable(name, value, ToCamelCase(name));
-            vars.push(vv);
-        }
+        let vv = new ExampleVariable(name, value, (swaggerName != null) ? swaggerName : ToCamelCase(name));
+        vars.push(vv);
+        return vv;
     }
 
-    private ExtractVarsFromUrl(url: string, unprocessedUrl: string, haveCheckNameAvailability: boolean, vars: ExampleVariable[])
+    private ExtractVarsFromUrl(url: string, unprocessedUrl: string, parameters: any, haveCheckNameAvailability: boolean, vars: ExampleVariable[])
     {
         var parts: string[] = url.split("/");
         var unprocessedParts: string[] = (unprocessedUrl ? unprocessedUrl.split("/") : null);
@@ -555,6 +552,7 @@ export class ExampleProcessor
         for (var i: number = 0; i < parts.length; i++)
         {
             var part: string = parts[i];
+            let force: boolean = false;
             if (part.startsWith("{{"))
             {
                 var varName: string = part.substring(2, part.length - 2).trim().toLowerCase();
@@ -562,25 +560,23 @@ export class ExampleProcessor
                 if (varName != "subscription_id")
                 {
                     var varValue: string = ToCamelCase(("my_" + varName).split("_name")[0].toLowerCase());
+
                     var swaggerName: string = (unprocessedUrl ? unprocessedParts[i] : "{}");
 
                     if (swaggerName)
                     {
                         swaggerName = swaggerName.substr(1, swaggerName.length - 2);
-                        var found: boolean = false;
-                        for (var v of vars)
-                        {
-                            if (v.name == varName)
-                            {
-                                found = true;
-                                last = v;
-                            }
+
+                        if (parameters != null) {
+                            if (parameters[swaggerName] && IsSpecialName(parameters[swaggerName])) {
+                                varValue = parameters[swaggerName];
+                                force = true;
+                            } /*else {
+                                varValue = "Xxx" + swaggerName;
+                            }*/
                         }
 
-                        if (!found) {
-                            last = new ExampleVariable(varName, varValue, swaggerName)
-                            vars.push(last);
-                        }
+                        last = this.PushVar(vars, varName, varValue, swaggerName, force);
                     }
                 }
             }
@@ -668,7 +664,14 @@ export class ExampleProcessor
                     }
                     else
                     {
-                        let defaultName: string = "my" + this.PluralToSingular(splitted[idx - 1].charAt(0).toUpperCase() + splitted[idx - 1].slice(1));
+                        let originalName = splitted[idx - 1];
+                        let defaultName = originalName;
+
+                        // check if any special cases
+                        if (['AzurePrivatePeering'].indexOf(originalName) < 0) {
+                            defaultName = "my" + this.PluralToSingular(originalName.charAt(0).toUpperCase() + originalName.slice(1));
+                        }
+
                         if (verify && (splitted[idx] != defaultName))
                         {
                             this._warnings.push(new ExampleWarning(this._exampleId, "non-standard resource name '" + splitted[idx] + "', should be '" + defaultName + "'"));

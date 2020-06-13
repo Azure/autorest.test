@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Example, ExampleVariable } from "./Example"
+import { IsSpecialName } from "../Common/Helpers"
 
 export class Model
 {
@@ -153,6 +154,11 @@ export class Model
                     if (v.unique) {
                         found.unique = true;
                         this._haveUnique = true
+                    }
+
+                    // special names always take precedence
+                    if (IsSpecialName(v.value)) {
+                        found.value = v.value;
                     }
                 }
             });
