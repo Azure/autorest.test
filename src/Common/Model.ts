@@ -74,6 +74,21 @@ export class Model
         return false;
     }
 
+    public needPrivateDns() : boolean {
+        if (this.namespace == "azure.mgmt.privatedns") {
+            return false;
+        }
+
+        return (this.needPrivateDnsZone());
+    }
+
+    public needPrivateDnsZone() : boolean {
+        if (this.namespace == "azure.mgmt.privatedns") {
+            return false;
+        }
+        return this.HaveVarMatching("^private_dns_.*$");
+    }
+
     public needNetworkInterface() : boolean {
         if (this.namespace == "azure.mgmt.network") {
             return false;

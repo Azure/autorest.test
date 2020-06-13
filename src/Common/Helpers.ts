@@ -205,6 +205,7 @@ export function EscapeString(original: string): string
 // and shouldn't be replaced
 //
 export function IsSpecialName(name: string): boolean {
-    return [ "AzurePrivatePeering"
+    return [ "AzurePrivatePeering",
+             "GatewaySubnet"
            ].indexOf(name) >=0;
 }

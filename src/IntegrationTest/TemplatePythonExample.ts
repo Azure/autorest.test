@@ -93,7 +93,8 @@ export function GeneratePythonExample(model: Model) : string[] {
     if (model.needCompute() ||
         model.needKeyvault() ||
         model.needNetwork() ||
-        model.needStorage()) {
+        model.needStorage() ||
+        model.needPrivateDns()) {
 
         if (model.needCompute()) {
             output.push("from azure.mgmt.compute import ComputeManagementClient");
@@ -110,6 +111,10 @@ export function GeneratePythonExample(model: Model) : string[] {
         if (model.needKeyvault()) {
             output.push("from azure.mgmt.keyvault import KeyvaultManagementClient");
             output.push("keyvault_client = KeyvaultManagementClient(credentials, SUBSCRIPTION_ID)");
+        }
+        if (model.needPrivateDns()) {
+            output.push("from azure.mgmt.privatedns import PrivateDnsManagementClient");
+            output.push("dns_client = PrivateDnsManagementClient(credentials, SUBSCRIPTION_ID)");
         }
     }
 
@@ -265,16 +270,24 @@ export function GeneratePythonExample(model: Model) : string[] {
         output.push("}");
         output.push("result_create = storage_client.storage_accounts.create(");
         output.push("    RESOURCE_GROUP,");
-        output.push("    storage_name,");
+        output.push("    STORAGE_ACCOUNT_NAME,");
         output.push("    BODY");
         output.push(")");
         output.push("result = result_create.result()");
-        output.push("print(result)");
+    }
+
+    if (model.needPrivateDnsZone()) {
         output.push("");
-        output.push("    def get_storage_key(self, RESOURCE_GROUP, storage_name):");
-        output.push("result = storage_client.storage_accounts.list_keys(RESOURCE_GROUP, storage_name)");
-        output.push("print(result)");
-        output.push("return result.keys[0].value");
+        output.push("");
+        output.push("#--------------------------------------------------------------------------");
+        output.push("# private dns zone (prerequisite)");
+        output.push("#--------------------------------------------------------------------------");
+        output.push("print(\"Prerequisite - Creating Private DNS Zone\")");
+        output.push("BODY = {");
+        output.push("   'location': 'global'");
+        output.push("}");
+        output.push("result = self.dns_client.private_zones.create_or_update(RESOURCE_GROUP_NAME, PRIVATE_DNS_ZONE_NAME, BODY)");
+        output.push("result = result.result()");
     }
 
     for (var ci = 0; ci < model.config.length; ci++)
