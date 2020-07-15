@@ -204,6 +204,7 @@ extension.Add("test", async autoRestApi => {
                                             exampleProcessor.MethodsCovered,
                                             exampleProcessor.ExamplesTotal,
                                             exampleProcessor.ExamplesTested,
+                                            exampleProcessor.CoverageMap,
                                             WriteFile,
                                             Info)
                 }

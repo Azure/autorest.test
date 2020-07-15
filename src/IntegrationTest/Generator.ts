@@ -57,6 +57,7 @@ export function GenerateIntegrationTest(artifactType: ArtifactType,
                                         methodsCovered: number,
                                         examplesTotal: number,
                                         examplesTested: number,
+                                        coverageMap: {},
                                         fileCb: FileCallback,
                                         logCb: LogCallback)
 {
@@ -84,7 +85,8 @@ export function GenerateIntegrationTest(artifactType: ArtifactType,
             methodsTotal,
             methodsCovered,
             examplesTotal,
-            examplesTested)
+            examplesTested,
+            coverageMap);
         code = GeneratePythonIntegrationTest(model);
       //path = "sdk/" + packageName.split("-").pop() + "/" +  packageName + "/tests/";
       path = "tests/";
@@ -101,7 +103,8 @@ export function GenerateIntegrationTest(artifactType: ArtifactType,
             methodsTotal,
             methodsCovered,
             examplesTotal,
-            examplesTested)
+            examplesTested,
+            coverageMap);
         code = GeneratePythonExample(model);
       //path = "sdk/" + packageName.split("-").pop() + "/" +  packageName + "/tests/";
       path = "examples/";

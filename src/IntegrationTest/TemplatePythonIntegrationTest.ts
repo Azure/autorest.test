@@ -46,6 +46,14 @@ export function GeneratePythonIntegrationTest(model: Model) : string[] {
     output.push("# ----------------------");
     output.push("");
 
+    output.push("# Current Operation Coverage:");
+    for (let opname in model.coverageMap)
+    {
+        let operation = model.coverageMap[opname];
+        output.push("#   " + opname + ": " + operation[0] + "/" + operation[1]);
+    }
+    output.push("");
+
     output.push("import unittest");
     output.push("");
     // XXX - proper namespace
@@ -109,7 +117,8 @@ export function GeneratePythonIntegrationTest(model: Model) : string[] {
     }
 
     if (model.needVirtualNetwork()) {
-        output.push("        def create_virtual_network(self, group_name, location, network_name, subnet_name):");
+        output.push("");
+        output.push("    def create_virtual_network(self, group_name, location, network_name, subnet_name):");
         output.push("");
         output.push("        azure_operation_poller = self.network_client.virtual_networks.create_or_update(");
         output.push("            group_name,");
@@ -135,7 +144,8 @@ export function GeneratePythonIntegrationTest(model: Model) : string[] {
     }
 
     if (model.needNetworkInterface()) {
-        output.push("        def create_network_interface(self, group_name, location, nic_name, subnet_id):");
+        output.push("");
+        output.push("    def create_network_interface(self, group_name, location, nic_name, subnet_id):");
         output.push("        async_nic_creation = self.network_client.network_interfaces.create_or_update(");
         output.push("            group_name,");
         output.push("            nic_name,");
@@ -154,7 +164,8 @@ export function GeneratePythonIntegrationTest(model: Model) : string[] {
     }
 
     if (model.needVirtualMachine()) {
-        output.push("        def create_vm(self, group_name, location, vm_name, nic_id):");
+        output.push("");
+        output.push("    def create_vm(self, group_name, location, vm_name, nic_id):");
         output.push("        # Create a vm with empty data disks.[put]");
         output.push("        BODY = {");
         output.push("          \"location\": location,");
@@ -211,7 +222,8 @@ export function GeneratePythonIntegrationTest(model: Model) : string[] {
     }
 
     if (model.needStorage()) {
-        output.push("        def create_storage_account(self, group_name, location, storage_name):");
+        output.push("");
+        output.push("    def create_storage_account(self, group_name, location, storage_name):");
         output.push("        BODY = {");
         output.push("          \"sku\": {");
         output.push("            \"name\": \"Standard_GRS\"");
@@ -246,6 +258,7 @@ export function GeneratePythonIntegrationTest(model: Model) : string[] {
         output.push("        return result.keys[0].value");
     }
 
+    output.push("");
     output.push("    @RandomNameResourceGroupPreparer(location=AZURE_LOCATION)");
 
     let preparersParamList: string = ", resource_group";
@@ -278,6 +291,7 @@ export function GeneratePythonIntegrationTest(model: Model) : string[] {
     
     for (var ci = 0; ci < model.config.length; ci++)
     {
+        output.push("");
         AppendExample(model, "        ", ci, output, true);
     }
 
