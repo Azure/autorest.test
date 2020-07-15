@@ -17,7 +17,8 @@ export class Model
         methodsTotal: number,
         methodsCovered: number,
         examplesTotal: number,
-        examplesTested: number)
+        examplesTested: number,
+        coverageMap: {})
     {
         this.examples = examples;
         this.config = config;
@@ -29,6 +30,7 @@ export class Model
         this.methodsCovered = methodsCovered;
         this.examplesTotal = examplesTotal;
         this.examplesTested = examplesTested;
+        this.coverageMap = coverageMap;
     }
 
     public examples: Example[];
@@ -41,6 +43,7 @@ export class Model
     public methodsCovered: number;
     public examplesTotal: number;
     public examplesTested: number;
+    public coverageMap: {};
 
     public needCompute() : boolean {
         if (this.namespace == "azure.mgmt.compute") {

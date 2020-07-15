@@ -170,15 +170,24 @@ export class ExampleProcessor
         this.MethodsCovered = 0;
         this.ExamplesTotal = 0;
         this.ExamplesTested = 0;
+
+        this.CoverageMap = {};
+
         for (var idx = 0; idx < this._swagger.operations.length; idx++)
         {
-            for (var mi = 0; mi < this._swagger.operations[idx].methods.length; mi++)
+            /* map[operation] = [current_coverage, total] */
+            let operation = this._swagger.operations[idx];
+            this.CoverageMap[operation['name']['raw']] = [0, 0];
+
+            for (var mi = 0; mi < operation.methods.length; mi++)
             {
-                let method = this._swagger.operations[idx].methods[mi];
+                let method = operation.methods[mi];
                 this.MethodsTotal++;
+                this.CoverageMap[operation['name']['raw']][1]++;
 
                 if (method['extensions'] != undefined && method['extensions']['x-ms-examples'] != undefined)
                 {
+                    this.CoverageMap[operation['name']['raw']][0]++;
                     this.MethodsCovered++;
 
                     for (let k in method['extensions']['x-ms-examples'])
@@ -820,6 +829,7 @@ export class ExampleProcessor
     public MethodsCovered: number;
     public ExamplesTotal: number;
     public ExamplesTested: number;
+    public CoverageMap: {};
 
     private _log: LogCallback;
 }
