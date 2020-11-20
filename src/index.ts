@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { AutoRestExtension, Channel } from '@azure-tools/autorest-extension-base';
+import { inplaceGen } from "@autorest/az/dist/utils/inplace";
 
 // Generic
 import { ExampleProcessor } from "./Common/ExampleProcessor"; 
@@ -58,9 +59,11 @@ extension.Add("test", async autoRestApi => {
         });
     }
 
+    let outputFolder = await autoRestApi.GetValue("output-folder");
     function WriteFile(path: string, rows: string[])
     {
-        autoRestApi.WriteFile(path, rows.join('\r\n'));
+        let outputs = inplaceGen(outputFolder,path,rows);
+        autoRestApi.WriteFile(path, outputs.join('\r'));
     }
 
     try
