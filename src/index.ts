@@ -11,11 +11,14 @@ import { Example, ExampleWarning } from "./Common/Example";
 
 // Generators
 import { GenerateIntegrationTest, GenerateDefaultTestScenario } from "./IntegrationTest/Generator";
+import { isNullOrUndefined } from 'util';
+import { isDict } from "./Common/Helpers"
 
 export type LogCallback = (message: string) => void;
 export type FileCallback = (path: string, rows: string[]) => void;
 
 const extension = new AutoRestExtension();
+const defaultScenario = "Scenario";
 
 export enum ArtifactType
 {
@@ -74,12 +77,14 @@ extension.Add("test", async autoRestApi => {
 
         const cli = await autoRestApi.GetValue("cli");
         const python = await autoRestApi.GetValue("python");
+        const testConfig = await autoRestApi.GetValue("test");
         let namespace = python['namespace'] || cli['namespace'];
         let packageName = python['package-name'] || cli['package-name'];
         const payloadFlatteningThreshold = python['payload-flattening-threshold'];
-
-        let testScenario = cli["test-setup"] || cli["test-scenario"] || cli["test"];
-        let scenarios: any = testScenario ? GetScenarios(testScenario) : {};
+    
+        const disable_scenario = await autoRestApi.GetValue("disable-scenario");
+        let testScenario = testConfig["test-scenario"] || cli["test-setup"] || cli["test-scenario"] || cli["test"];
+        let scenarios: any = testScenario && !disable_scenario ? GroupTestScenario(testScenario, "") : {};
         let track2: boolean = await autoRestApi.GetValue("track2");
 
         if (!namespace)
@@ -139,81 +144,73 @@ extension.Add("test", async autoRestApi => {
             // Generate Default Test Scenario
             //
             //-------------------------------------------------------------------------------------------------------------------------
+            let swagger = JSON.parse(iff);
+            let exampleProcessor = new ExampleProcessor(swagger, undefined, payloadFlatteningThreshold, Warning);
+            let examples: Example[] = exampleProcessor.GetExamples();
+            let defaultTestScenario = GenerateDefaultTestScenario(examples, Warning);
             if (Object.keys(scenarios).length == 0) {
-                let swagger = JSON.parse(iff);
-                let exampleProcessor = new ExampleProcessor(swagger, testScenario, payloadFlatteningThreshold, Warning);
-                let examples: Example[] = exampleProcessor.GetExamples();
-                testScenario = GenerateDefaultTestScenario(examples, Warning);
-                scenarios[""] = testScenario;
+                scenarios[""] = {};
+                scenarios[""][defaultScenario] = defaultTestScenario;
             }
 
             for (let k of Object.keys(scenarios)) {
-                //-------------------------------------------------------------------------------------------------------------------------
-                //
-                // PARSE INPUT MODEL
-                //
-                //-------------------------------------------------------------------------------------------------------------------------
-                let swagger = JSON.parse(iff);
+                for (let sk of Object.keys(scenarios[k])) {
+                    //-------------------------------------------------------------------------------------------------------------------------
+                    //
+                    // PARSE INPUT MODEL
+                    //
+                    //-------------------------------------------------------------------------------------------------------------------------
+                    let swagger = JSON.parse(iff);
 
-                //-------------------------------------------------------------------------------------------------------------------------
-                //
-                // PROCESS EXAMPLES
-                //
-                //-------------------------------------------------------------------------------------------------------------------------
-                let exampleProcessor = new ExampleProcessor(swagger, scenarios[k], payloadFlatteningThreshold, Warning);
-                let examples: Example[] = exampleProcessor.GetExamples();
+                    //-------------------------------------------------------------------------------------------------------------------------
+                    //
+                    // PROCESS EXAMPLES
+                    //
+                    //-------------------------------------------------------------------------------------------------------------------------
+                    let exampleProcessor = new ExampleProcessor(swagger, scenarios[k][sk], payloadFlatteningThreshold, Warning);
+                    let examples: Example[] = exampleProcessor.GetExamples();
 
-                //-------------------------------------------------------------------------------------------------------------------------
-                //
-                // GENERATE DEFAULT TEST SCENARIO IF DOESN'T EXIST
-                //
-                //-------------------------------------------------------------------------------------------------------------------------
-                if (!testScenario)
-                {
-                    testScenario = GenerateDefaultTestScenario(examples, Warning);
-                    exampleProcessor = new ExampleProcessor(swagger, scenarios[k], payloadFlatteningThreshold, Warning);
+                    //-------------------------------------------------------------------------------------------------------------------------
+                    //
+                    // GET ADDITIONAL INFORMATION FROM SWAGGER
+                    //
+                    //-------------------------------------------------------------------------------------------------------------------------
+                    let mgmtClientName = swagger['name'];
+                    // XXX - consider other options here
+
+                    //-------------------------------------------------------------------------------------------------------------------------
+                    //
+                    // INTEGRATION TESTS
+                    //
+                    //-------------------------------------------------------------------------------------------------------------------------
+                    if (artifactType == ArtifactType.ArtifactTypeSwaggerIntegrationTest ||
+                        artifactType == ArtifactType.ArtifactTypePythonIntegrationTest ||
+                        artifactType == ArtifactType.ArtifactTypePythonExample)
+                    {
+                        GenerateIntegrationTest(artifactType,
+                                                scenarios[k][sk],
+                                                `${k}_${sk}`,
+                                                examples,
+                                                namespace,
+                                                cliName,
+                                                packageName,
+                                                mgmtClientName,
+                                                track2,
+                                                exampleProcessor.MethodsTotal,
+                                                exampleProcessor.MethodsCovered,
+                                                exampleProcessor.ExamplesTotal,
+                                                exampleProcessor.ExamplesTested,
+                                                exampleProcessor.CoverageMap,
+                                                WriteFile,
+                                                Info)
+                    }
+
+                    let warnings: ExampleWarning[] = exampleProcessor.GetWarnings();
+
+                    warnings.forEach(warning => {
+                        Warning(warning.ExampleName + ": " + warning.Description);
+                    });
                 }
-
-                //-------------------------------------------------------------------------------------------------------------------------
-                //
-                // GET ADDITIONAL INFORMATION FROM SWAGGER
-                //
-                //-------------------------------------------------------------------------------------------------------------------------
-                let mgmtClientName = swagger['name'];
-                // XXX - consider other options here
-
-                //-------------------------------------------------------------------------------------------------------------------------
-                //
-                // INTEGRATION TESTS
-                //
-                //-------------------------------------------------------------------------------------------------------------------------
-                if (artifactType == ArtifactType.ArtifactTypeSwaggerIntegrationTest ||
-                    artifactType == ArtifactType.ArtifactTypePythonIntegrationTest ||
-                    artifactType == ArtifactType.ArtifactTypePythonExample)
-                {
-                    GenerateIntegrationTest(artifactType,
-                                            scenarios[k],
-                                            k,
-                                            examples,
-                                            namespace,
-                                            cliName,
-                                            packageName,
-                                            mgmtClientName,
-                                            track2,
-                                            exampleProcessor.MethodsTotal,
-                                            exampleProcessor.MethodsCovered,
-                                            exampleProcessor.ExamplesTotal,
-                                            exampleProcessor.ExamplesTested,
-                                            exampleProcessor.CoverageMap,
-                                            WriteFile,
-                                            Info)
-                }
-
-                let warnings: ExampleWarning[] = exampleProcessor.GetWarnings();
-
-                warnings.forEach(warning => {
-                    Warning(warning.ExampleName + ": " + warning.Description);
-                });
             }
         }
     }
@@ -248,6 +245,40 @@ function GetScenarios(raw: any): any {
     }
 
     return dest;
+}
+
+export function GroupTestScenario(testScenario: any, extensionName: string) {
+    if (isNullOrUndefined(testScenario))    return testScenario;
+
+    let ret = {};
+
+    function addScenario(groupName: string, scenarioName: string, items: any[]) {
+        if(!ret.hasOwnProperty(groupName))  ret[groupName] = {};
+        if(!ret[groupName].hasOwnProperty(scenarioName))    ret[groupName][scenarioName] = [];
+        ret[groupName][scenarioName].push(...items);
+    }
+
+    if (isDict(testScenario)) {
+        let keys = Object.getOwnPropertyNames(testScenario);
+        for (var key of keys) {
+            let item = testScenario[key];
+            let splitedName = key.split("_");
+            if (splitedName.length > 1) {
+                addScenario(splitedName[0], splitedName.slice(1).join("_"), item);
+            }
+            else {
+                addScenario(splitedName[0], defaultScenario, item);
+            }
+        }
+    }
+    else if (Array.isArray(testScenario))
+    {
+        for (var ci = 0; ci < testScenario.length; ci++) {
+            addScenario(extensionName, defaultScenario, [testScenario[ci]]);
+        }
+    }
+
+    return ret;
 }
 
 extension.Run();
