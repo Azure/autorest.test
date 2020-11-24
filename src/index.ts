@@ -63,7 +63,7 @@ extension.Add("test", async autoRestApi => {
     function WriteFile(path: string, rows: string[])
     {
         let outputs = inplaceGen(outputFolder,path,rows);
-        autoRestApi.WriteFile(path, outputs.join('\r'));
+        autoRestApi.WriteFile(path, outputs.join('\n'));
     }
 
     try

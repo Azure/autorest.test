@@ -3,9 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license output.pushrmation.
  *--------------------------------------------------------------------------------------------*/
 
-import { Indent, ToSnakeCase } from "../Common/Helpers";
+import { abbre, uniqueName, Indent, ToSnakeCase, ToMultiLine, } from "../Common/Helpers";
 import { Model } from "../Common/Model";
 import { Example, ReferenceType, ExampleWarning, ExampleVariable } from "../Common/Example";
+// import { ToMultiLine } from "@autorest/az/dist/utils/helper";
 
 export function AddVariables(model: Model, prefix: string, output: string[]) {
     // get variables from all examples
@@ -31,7 +32,7 @@ export function AppendExample(model: Model, prefix: string, ci: number, output: 
         return;
 
     let hasBody: boolean = (example.GetExampleBodyName() != null);
-    let bodyParamName = (example.GetExampleBodyName() + "_body").toUpperCase();
+    let bodyParamName = uniqueName((example.GetExampleBodyName() + "_body").toUpperCase());
 
     output.push("        #--------------------------------------------------------------------------");
 
@@ -127,8 +128,9 @@ export function AppendExample(model: Model, prefix: string, ci: number, output: 
     let disabled = model.config[ci]['disabled'] ? "# " : "";
 
     let op = ((ToSnakeCase(example.OperationName) != "") ? (ToSnakeCase(example.OperationName) + ".") : "") + ((example.LongRunning && model.track2) ? "begin_" : "") + ToSnakeCase(example.MethodName);
-    let resultParam = "result_" + op.split(".").join("_");
-    output.push(prefix + disabled + `${resultParam} = ` + (isTest ? "self." : "") + "mgmt_client." + op + "(" + clientParams + ")");
+    let resultParam = "result_" + abbre(op);
+    ToMultiLine(prefix + disabled + `${resultParam} = ` + (isTest ? "self." : "") + "mgmt_client." + op + "(" + clientParams + ")", output);
+    //output.push(prefix + disabled + `${resultParam} = ` + (isTest ? "self." : "") + "mgmt_client." + op + "(" + clientParams + ")");
     if (example.LongRunning)
     {
         output.push(prefix + disabled + `${resultParam} = ${resultParam}.result()`);
