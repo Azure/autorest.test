@@ -1,6 +1,6 @@
 {
   "name": "@autorest/test",
-  "version": "0.1.10",
+  "version": "0.1.70",
   "description": "Autorest Test extension",
   "main": "dist/index.js",
   "engines": {
