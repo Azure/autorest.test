@@ -16,8 +16,9 @@ export function GenerateDefaultTestScenario(
 {
     warningCb("");
     warningCb("NO TEST SCENARIO PROVIDED - DEFAULT WILL BE USED");
-    warningCb("ADD FOLLOWING SECTION TO readme.cli.md FILE TO MODIFY IT");
+    warningCb("FOLLOWING SECTION CAN BE USED IN readme.test.md");
     warningCb("--------------------------------------------------------");
+    warningCb("test:");
     warningCb("  test-scenario:");
 
     let testScenario = [];
@@ -90,7 +91,7 @@ export function GenerateIntegrationTest(artifactType: ArtifactType,
         code = GeneratePythonIntegrationTest(model);
       //path = "sdk/" + packageName.split("-").pop() + "/" +  packageName + "/tests/";
       path = "tests/";
-      path += "test_cli_mgmt_" + cliName.replace(/-/g, '_') + ((postfix != "") ? ("_" + postfix) : "") + ".py";
+      path += "test_mgmt_" + cliName.replace(/-/g, '_') + ((postfix != "") ? ("_" + postfix) : "") + ".py";
     }
     else if (artifactType == ArtifactType.ArtifactTypePythonExample)
     {
@@ -113,7 +114,7 @@ export function GenerateIntegrationTest(artifactType: ArtifactType,
     else
     {
         code = GenerateSwaggerIntegrationTest(examples, testScenario);
-        path += "test_cli_mgmt_" + cliName.replace(/-/g, '_') + ((postfix != "") ? ("_" + postfix) : "") + ".py";
+        path += "test_mgmt_" + cliName.replace(/-/g, '_') + ((postfix != "") ? ("_" + postfix) : "") + ".py";
     }
 
     fileCb(path, code);
