@@ -82,6 +82,26 @@ Last piece of information printed out is test coverage information (this informa
     INFO: # Coverage %      : 100
     INFO: # ----------------------
 
+
+## How to config multiple test-scenario
+
+You can config multiple test scenarios, for instance:
+~~~ (json)
+cli:
+  test-scenario:
+    ManagedNetworksScenario:
+      - name: ManagedNetworkPeeringPoliciesPut
+      - name: ManagedNetworkPeeringPoliciesGet
+      - name: ManagedNetworkPeeringPoliciesListByManagedNetwork
+      - name: ManagedNetworkPeeringPoliciesDelete
+    ManagedNetworksScenario:
+      - name: ScopeAssignmentsPut
+      - name: ScopeAssignmentsGet
+      - name: ScopeAssignmentsList
+      - name: ScopeAssignmentsDelete
+~~~
+In above sample, two scenario is configured.
+
 ## How to Generate Coverage Report
 
 From **azure-sdk-for-python** folder run following command:
@@ -95,4 +115,3 @@ From **azure-sdk-for-python** folder run following command:
 --python-example
 
 --track2
-
