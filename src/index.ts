@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { AutoRestExtension, Channel } from '@azure-tools/autorest-extension-base';
-import { inplaceGen } from "@autorest/az/dist/utils/inplace";
+import { inplaceGen, openInplaceGen, closeInplaceGen } from "@autorest/az/dist/utils/inplace";
 
 // Generic
 import { ExampleProcessor } from "./Common/ExampleProcessor"; 
@@ -139,6 +139,7 @@ extension.Add("test", async autoRestApi => {
             Info("GENERATION: --python-example");
             artifactType = ArtifactType.ArtifactTypePythonExample;
         }
+        openInplaceGen();
 
         for (let iff of inputFiles)
         {
@@ -216,6 +217,7 @@ extension.Add("test", async autoRestApi => {
                 }
             }
         }
+        closeInplaceGen();
     }
     catch (e)
     {
